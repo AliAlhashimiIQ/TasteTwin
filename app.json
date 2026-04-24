@@ -28,7 +28,11 @@
     },
     "plugins": [
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      ["expo-image-picker", {
+        "photosPermission": "TasteTwin needs access to your photos to analyze meals.",
+        "cameraPermission": "TasteTwin needs camera access to scan your meals."
+      }]
     ]
   }
 }

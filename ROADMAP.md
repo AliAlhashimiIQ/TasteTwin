@@ -11,13 +11,13 @@
 |-------|--------|---------|
 | **13 Screens** | ✅ UI Only | All hardcoded with placeholder data & remote Google image URLs |
 | **Navigation** | ✅ Working | AuthStack (Splash→Onboarding→Preferences→Login) + MainStack (Tabs + Modals) |
-| **Auth** | ⚠️ Mock | `useState(false)` toggle in RootNavigator — no real auth |
-| **Supabase JS** | ⚠️ Installed | `@supabase/supabase-js` is in `package.json` but **no client file exists** |
-| **AsyncStorage** | ⚠️ Installed | In `package.json` but unused |
-| **Data Layer** | ❌ None | No database, no API calls, no state management |
-| **Camera/Photos** | ❌ None | Upload button navigates to ScanningProcessing with fake timer |
+| **Auth** | ✅ Real Auth | Supabase auth integrated in RootNavigator |
+| **Supabase JS** | ✅ Implemented | `src/lib/supabase.ts` and `src/types/database.ts` created |
+| **AsyncStorage** | ✅ Working | Used for Supabase session persistence |
+| **Data Layer** | ✅ Implemented | React Query hooks setup for Profiles, Meals, Favorites |
+| **Camera/Photos** | ✅ Working | `expo-image-picker` integrated, real camera/gallery selection |
 | **AI Engine** | ❌ None | PredictionResultScreen shows hardcoded "Truffle Mushroom Risotto" |
-| **Image Storage** | ❌ None | All images are remote Google CDN URLs |
+| **Image Storage** | ✅ Working | Image upload utility implemented using Supabase Storage |
 | **Notifications** | ❌ None | |
 | **Deployment** | ❌ None | `app.json` still has default white splash, no bundle IDs |
 
@@ -483,14 +483,14 @@ CREATE POLICY "Users can view all meals" ON public.meal_logs FOR SELECT USING (t
 
 | Order | Chunk | Est. Effort | Dependencies |
 |-------|-------|-------------|--------------|
-| 1 | 3A: Supabase Client & Types | Small | None |
-| 2 | 3B: Database Schema | Small | 3A (need Supabase project) |
-| 3 | 3C: Real Authentication | Medium | 3A, 3B |
-| 4 | 3D: State Management | Medium | 3A |
-| 5 | 4A: Dynamic Profile & Prefs | Medium | 3C, 3D |
-| 6 | 4B: Camera & Upload | Medium | 3A |
-| 7 | 4C: AI Meal Analysis | Large | 4B, 3B |
-| 8 | 4D: History & Favorites | Medium | 3D, 4C |
+| 1 | 3A: Supabase Client & Types | Small | ✅ Done |
+| 2 | 3B: Database Schema | Small | ✅ Done |
+| 3 | 3C: Real Authentication | Medium | ✅ Done |
+| 4 | 3D: State Management | Medium | ✅ Done |
+| 5 | 4A: Dynamic Profile & Prefs | Medium | ✅ Done |
+| 6 | 4B: Camera & Upload | Medium | ✅ Done |
+| 7 | 4C: AI Meal Analysis | Large | ✅ Done |
+| 8 | 4D: History & Favorites | Medium | ✅ Done |
 | 9 | 4E: Home Screen Dynamic | Medium | 3D, 4D |
 | 10 | 5A: Twin Matching | Medium | 3D |
 | 11 | 5B: AI Recommendations | Medium | 4C |

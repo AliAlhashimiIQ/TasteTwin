@@ -6,14 +6,15 @@ import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { PreferencesScreen } from '../screens/PreferencesScreen';
 import { RecommendationsScreen } from '../screens/RecommendationsScreen';
 import { ScanningProcessingScreen } from '../screens/ScanningProcessingScreen';
+import type { MealLog } from '../types/database';
 
 export type MainStackParamList = {
   MainTabs: undefined;
-  PredictionResult: undefined;
+  PredictionResult: { mealData?: MealLog } | undefined;
   Favorites: undefined;
   Preferences: undefined;
   Recommendations: undefined;
-  ScanningProcessing: undefined;
+  ScanningProcessing: { imageUri: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();

@@ -1,10 +1,65 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
-import { useAuth } from '../navigation/RootNavigator';
+import { supabase } from '../lib/supabase';
 
 export const LoginScreen = () => {
-  const { signIn } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+    }
+    // On success, onAuthStateChange in RootNavigator handles navigation
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: fullName.trim() || undefined,
+        },
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+    }
+    // The trigger in Supabase will auto-create profile + taste_profile
+    setLoading(false);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background relative">
@@ -26,8 +81,12 @@ export const LoginScreen = () => {
           <View className="w-full max-w-md mx-auto space-y-10">
             {/* Header Text */}
             <View className="space-y-2 mb-8">
-              <Text className="font-headline font-extrabold text-4xl text-on-surface tracking-tight">Welcome back</Text>
-              <Text className="font-body text-on-surface-variant text-base">Sign in to your culinary sanctuary</Text>
+              <Text className="font-headline font-extrabold text-4xl text-on-surface tracking-tight">
+                {isSignUp ? 'Create Account' : 'Welcome back'}
+              </Text>
+              <Text className="font-body text-on-surface-variant text-base">
+                {isSignUp ? 'Join your culinary sanctuary' : 'Sign in to your culinary sanctuary'}
+              </Text>
             </View>
 
             {/* Social Auth Grid */}
@@ -52,16 +111,36 @@ export const LoginScreen = () => {
 
             {/* Auth Form */}
             <View className="space-y-6">
+              {/* Full Name (Sign Up only) */}
+              {isSignUp && (
+                <View className="space-y-1.5 mb-4">
+                  <Text className="text-xs font-label uppercase tracking-widest text-outline ml-1 mb-2">Full Name</Text>
+                  <View className="relative justify-center">
+                    <MaterialIcons name="person" size={20} color="#a48c7a" style={{ position: 'absolute', left: 16, zIndex: 10 }} />
+                    <TextInput 
+                      className="w-full bg-surface-container-lowest border-0 rounded-xl py-4 pl-12 pr-4 text-on-surface font-body text-base"
+                      placeholder="Your full name"
+                      placeholderTextColor="#353534"
+                      value={fullName}
+                      onChangeText={setFullName}
+                      autoCapitalize="words"
+                    />
+                  </View>
+                </View>
+              )}
+
               <View className="space-y-1.5 mb-4">
                 <Text className="text-xs font-label uppercase tracking-widest text-outline ml-1 mb-2">Email Address</Text>
                 <View className="relative justify-center">
-                  <MaterialIcons name="mail" size={20} color="#a48c7a" className="absolute left-4 z-10" />
+                  <MaterialIcons name="mail" size={20} color="#a48c7a" style={{ position: 'absolute', left: 16, zIndex: 10 }} />
                   <TextInput 
                     className="w-full bg-surface-container-lowest border-0 rounded-xl py-4 pl-12 pr-4 text-on-surface font-body text-base"
                     placeholder="gourmet@tastetwin.ai"
                     placeholderTextColor="#353534"
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    value={email}
+                    onChangeText={(text) => { setEmail(text); setError(null); }}
                   />
                 </View>
               </View>
@@ -69,40 +148,63 @@ export const LoginScreen = () => {
               <View className="space-y-1.5 mb-8">
                 <View className="flex-row justify-between items-center ml-1 mb-2">
                   <Text className="text-xs font-label uppercase tracking-widest text-outline">Password</Text>
-                  <TouchableOpacity>
-                    <Text className="text-xs font-label text-primary">Forgot?</Text>
-                  </TouchableOpacity>
+                  {!isSignUp && (
+                    <TouchableOpacity>
+                      <Text className="text-xs font-label text-primary">Forgot?</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View className="relative justify-center">
-                  <MaterialIcons name="lock" size={20} color="#a48c7a" className="absolute left-4 z-10" />
+                  <MaterialIcons name="lock" size={20} color="#a48c7a" style={{ position: 'absolute', left: 16, zIndex: 10 }} />
                   <TextInput 
                     className="w-full bg-surface-container-lowest border-0 rounded-xl py-4 pl-12 pr-12 text-on-surface font-body text-base"
                     placeholder="••••••••••••"
                     placeholderTextColor="#353534"
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={(text) => { setPassword(text); setError(null); }}
                   />
-                  <TouchableOpacity className="absolute right-4 z-10">
-                    <MaterialIcons name="visibility" size={20} color="#a48c7a" />
+                  <TouchableOpacity 
+                    className="absolute right-4 z-10"
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color="#a48c7a" />
                   </TouchableOpacity>
                 </View>
               </View>
 
+              {/* Error Message */}
+              {error && (
+                <View className="bg-error-container/20 rounded-xl px-4 py-3 mb-4">
+                  <Text className="text-red-400 font-body text-sm text-center">{error}</Text>
+                </View>
+              )}
+
               {/* CTA Button */}
               <TouchableOpacity 
                 className="w-full bg-primary-container py-5 rounded-xl items-center shadow-lg shadow-primary/20 mb-6"
-                onPress={signIn}
+                onPress={isSignUp ? handleSignUp : handleSignIn}
+                disabled={loading}
               >
-                <Text className="text-on-primary font-headline font-extrabold text-lg tracking-tight">
-                  Sign in to Account
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color="#4d2600" />
+                ) : (
+                  <Text className="text-on-primary font-headline font-extrabold text-lg tracking-tight">
+                    {isSignUp ? 'Create Account' : 'Sign in to Account'}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
 
-            {/* Footer Link */}
+            {/* Footer Link — Toggle Sign In / Sign Up */}
             <View className="flex-row justify-center mt-4">
-              <Text className="font-body text-on-surface-variant text-sm">New to the table? </Text>
-              <TouchableOpacity>
-                <Text className="text-secondary font-bold ml-1 text-sm">Create your profile</Text>
+              <Text className="font-body text-on-surface-variant text-sm">
+                {isSignUp ? 'Already have an account? ' : 'New to the table? '}
+              </Text>
+              <TouchableOpacity onPress={() => { setIsSignUp(!isSignUp); setError(null); }}>
+                <Text className="text-secondary font-bold ml-1 text-sm">
+                  {isSignUp ? 'Sign in' : 'Create your profile'}
+                </Text>
               </TouchableOpacity>
             </View>
 

@@ -1,15 +1,24 @@
 import React, { useEffect } from 'react';
-import { View, Text, SafeAreaView, Image, Animated, Easing } from 'react-native';
+import { View, Text, SafeAreaView, Image, Animated, Easing, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import type { MainStackParamList } from '../navigation/MainStack';
+import { useAnalyze } from '../hooks/useAnalyze';
+import { useAuth } from '../lib/AuthContext';
 
 type ScanningScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'ScanningProcessing'>;
+type ScanningScreenRouteProp = RouteProp<MainStackParamList, 'ScanningProcessing'>;
 
 export const ScanningProcessingScreen = () => {
   const navigation = useNavigation<ScanningScreenNavigationProp>();
+  const route = useRoute<ScanningScreenRouteProp>();
+  const imageUri = route.params?.imageUri;
   const scanLineAnim = new Animated.Value(0);
+  
+  const { user } = useAuth();
+  const analyzeMutation = useAnalyze();
 
   useEffect(() => {
     // Start scanning animation
@@ -30,21 +39,38 @@ export const ScanningProcessingScreen = () => {
       ])
     ).start();
 
-    // Simulate API delay, then navigate to Result
-    const timer = setTimeout(() => {
-      navigation.replace('PredictionResult');
-    }, 3500);
-
-    return () => clearTimeout(timer);
+    // Trigger AI analysis
+    const analyzeImage = async () => {
+      if (!imageUri || !user) {
+        Alert.alert('Error', 'Missing image or user session.');
+        navigation.goBack();
+        return;
+      }
+      
+      try {
+        const result = await analyzeMutation.mutateAsync({ imageUri, userId: user.id });
+        navigation.replace('PredictionResult', { mealData: result });
+      } catch (error: any) {
+        Alert.alert('Analysis Failed', error.message || 'Could not analyze image.');
+        navigation.goBack();
+      }
+    };
+    
+    analyzeImage();
   }, []);
 
   const scanTranslateY = scanLineAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 300] // Roughly the height of the image container
+    outputRange: [0, 300]
   });
 
+  // Use the captured image or fall back to placeholder
+  const displayImage = imageUri
+    ? { uri: imageUri }
+    : { uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbar-FlVw5dj_D2Hlh-uQaHiZZcKxbLJAcxDw9l2Mrcw3Wvlrph8RX7egHSi2-lm7xaetSe43g-sspRToTDB4-jKgSU3hFtbLL4PLWYvqnDCf2Zg8Mov6Q911sA9xdMeaWQ7UpHZiWnkIDUUrsmDuXsEq9SBLm6lwyoVB4oS8N1_vs18AULXqFsXLNSeM0JOQrCYmdUsqdbXcse4BWSdOOCEub5FsDXbGYdty-qI6SQaRA0mgOgzeFmCGcExlIR5vgwxiSREotv3vw' };
+
   return (
-    <SafeAreaView className="flex-1 bg-background" >
+    <SafeAreaView className="flex-1 bg-background">
       {/* TopAppBar */}
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/80 z-50">
         <View className="flex-row items-center gap-3">
@@ -62,8 +88,9 @@ export const ScanningProcessingScreen = () => {
         {/* Scanning Interface */}
         <View className="relative w-full max-w-md aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl bg-surface-container border border-outline-variant/10">
           <Image 
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbar-FlVw5dj_D2Hlh-uQaHiZZcKxbLJAcxDw9l2Mrcw3Wvlrph8RX7egHSi2-lm7xaetSe43g-sspRToTDB4-jKgSU3hFtbLL4PLWYvqnDCf2Zg8Mov6Q911sA9xdMeaWQ7UpHZiWnkIDUUrsmDuXsEq9SBLm6lwyoVB4oS8N1_vs18AULXqFsXLNSeM0JOQrCYmdUsqdbXcse4BWSdOOCEub5FsDXbGYdty-qI6SQaRA0mgOgzeFmCGcExlIR5vgwxiSREotv3vw' }}
-            className="w-full h-full object-cover grayscale opacity-70"
+            source={displayImage}
+            className="w-full h-full object-cover"
+            style={imageUri ? undefined : { opacity: 0.7 }}
           />
           <View className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
           
@@ -103,15 +130,15 @@ export const ScanningProcessingScreen = () => {
           {/* Loading Bento Blocks */}
           <View className="flex-row justify-between w-full max-w-md">
             <View className="w-[48%] bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
-              <MaterialIcons name="science" size={20} color="#e9c349" className="mb-2" />
-              <Text className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-2">Nutrients</Text>
+              <MaterialIcons name="science" size={20} color="#e9c349" />
+              <Text className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-2 mt-2">Nutrients</Text>
               <View className="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
                 <View className="h-full bg-secondary w-2/3 animate-pulse" />
               </View>
             </View>
             <View className="w-[48%] bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
-              <MaterialIcons name="local-fire-department" size={20} color="#ffb77d" className="mb-2" />
-              <Text className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Est. Calories</Text>
+              <MaterialIcons name="local-fire-department" size={20} color="#ffb77d" />
+              <Text className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1 mt-2">Est. Calories</Text>
               <Text className="font-headline font-bold text-white text-lg opacity-50">--- kcal</Text>
             </View>
           </View>

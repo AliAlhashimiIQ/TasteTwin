@@ -1,13 +1,55 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, StyleSheet, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '../navigation/MainStack';
+import * as ImagePicker from 'expo-image-picker';
+
+type UploadScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'MainTabs'>;
 
 export const UploadScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<UploadScreenNavigationProp>();
+
+  const handleCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Needed', 'TasteTwin needs camera access to scan your meals.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [4, 5],
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      navigation.navigate('ScanningProcessing', { imageUri: result.assets[0].uri });
+    }
+  };
+
+  const handleGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Needed', 'TasteTwin needs access to your photos to analyze meals.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [4, 5],
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      navigation.navigate('ScanningProcessing', { imageUri: result.assets[0].uri });
+    }
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" >
+    <SafeAreaView className="flex-1 bg-background">
       {/* TopAppBar */}
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/90 z-50">
         <View className="flex-row items-center space-x-3">
@@ -33,14 +75,14 @@ export const UploadScreen = () => {
 
         {/* Scanning Interface Container */}
         <View className="relative mb-8 items-center">
-          {/* Asymmetric Glow (Simulated with absolute views) */}
+          {/* Asymmetric Glow */}
           <View className="absolute -top-10 -left-10 w-48 h-48 bg-primary/20 rounded-full" style={styles.blur} />
           <View className="absolute -bottom-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full" style={styles.blur} />
 
           {/* Upload Area */}
           <TouchableOpacity 
             className="w-full aspect-[4/5] bg-surface-container-low rounded-xl overflow-hidden justify-center items-center border border-outline-variant/10 relative"
-            onPress={() => navigation.navigate('ScanningProcessing' as never)}
+            onPress={handleGallery}
           >
             {/* Corner Accents */}
             <View className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-primary/40 rounded-tl-lg" />
@@ -74,7 +116,7 @@ export const UploadScreen = () => {
         <View className="flex-row space-x-4 mb-12">
           <TouchableOpacity 
             className="flex-1 bg-primary flex-row items-center justify-center py-5 rounded-xl"
-            onPress={() => navigation.navigate('ScanningProcessing' as never)}
+            onPress={handleCamera}
           >
             <MaterialIcons name="photo-camera" size={24} color="#4d2600" />
             <Text className="text-on-primary font-headline font-bold ml-2 text-base">Camera</Text>
@@ -82,7 +124,7 @@ export const UploadScreen = () => {
           
           <TouchableOpacity 
             className="flex-1 bg-surface-container flex-row items-center justify-center py-5 rounded-xl border border-outline-variant/10"
-            onPress={() => navigation.navigate('ScanningProcessing' as never)}
+            onPress={handleGallery}
           >
             <MaterialIcons name="photo-library" size={24} color="#e9c349" />
             <Text className="text-white font-headline font-bold ml-2 text-base">Gallery</Text>

@@ -1,8 +1,19 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useMeals } from '../hooks/useMeals';
+import { useProfile } from '../hooks/useProfile';
 
 export const HistoryScreen = () => {
+  const { data: meals, isLoading, refetch, isRefetching } = useMeals();
+  const { data: profileData } = useProfile();
+  const profile = profileData?.profile;
+
+  const formatDate = (isoString: string | undefined) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
   return (
     <SafeAreaView className="flex-1 bg-background" >
       {/* TopAppBar */}
@@ -10,7 +21,7 @@ export const HistoryScreen = () => {
         <View className="flex-row items-center space-x-3">
           <View className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/20">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfyTJsazlUgbP1jfRf1x8A9Cb7m7dGw6HnyaDkLmAapDkHj9VhW2_28FWEvs9lGJQgqQelPl9JiRDN389u7_T9kRsZ_hkCWCHs5DSt4U_iy4fFeIz85fWsUFMrOEVlK_l7jGiHOyURbVFfuksGpDhcm5wdfm3F_jQliABQVaezuMm1WMTLy6NuG0Y1uueRDp3xiKQfVSTSgkeoTy0Ar6peYZLRevapRuCCNJHYKQIpnvU8LpUtbST9khF1tlRFOIU_pZlBdwE9nSoN' }}
+              source={{ uri: profile?.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfyTJsazlUgbP1jfRf1x8A9Cb7m7dGw6HnyaDkLmAapDkHj9VhW2_28FWEvs9lGJQgqQelPl9JiRDN389u7_T9kRsZ_hkCWCHs5DSt4U_iy4fFeIz85fWsUFMrOEVlK_l7jGiHOyURbVFfuksGpDhcm5wdfm3F_jQliABQVaezuMm1WMTLy6NuG0Y1uueRDp3xiKQfVSTSgkeoTy0Ar6peYZLRevapRuCCNJHYKQIpnvU8LpUtbST9khF1tlRFOIU_pZlBdwE9nSoN' }}
               className="w-full h-full object-cover"
             />
           </View>
@@ -21,7 +32,13 @@ export const HistoryScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#e9c349" colors={['#e9c349']} />
+        }
+      >
         {/* Editorial Header Section */}
         <View className="mb-10">
           <Text className="text-4xl font-headline font-extrabold tracking-tight text-on-surface mb-2">History</Text>
@@ -48,80 +65,46 @@ export const HistoryScreen = () => {
 
         {/* Meal History List */}
         <View className="space-y-6">
-          {/* Entry 1 */}
-          <TouchableOpacity className="bg-surface-container-low rounded-[24px] p-1 shadow-lg shadow-primary/5 mb-6">
-            <View className="flex-row p-4 bg-surface-container rounded-[20px]">
-              <View className="w-28 h-28 rounded-xl overflow-hidden mr-4">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnkxlx2QK_CH7d7J7vA5xkQcNELKQOIhsFojPh5DhYAWre7o-NbOKg2-HrWUI5TKkBpvDpn2jUZ0nZIDBYiueCM77-CxsjjWWNY7KmEPJ8ao7eppeROdaCID1zfiib3E6HRt24fCVRxuvZvi1xYZ1wRC5mOzXur4lWqOYF2cCPmor4dJItUl4sm_TG2ywdjhF6emLCxhXiWkqzblDVc0iM6jibWkWyU01Ggo4QuCpgMQXXOlUiQVEqE7l3gpMXePqLybn_IuRK1tt2' }} className="w-full h-full object-cover" />
-              </View>
-              <View className="flex-1 justify-center">
-                <View className="flex-row justify-between items-start mb-1">
-                  <Text className="text-xl font-headline font-bold text-on-surface leading-tight flex-1">Summer Quinoa Oasis</Text>
-                  <MaterialIcons name="arrow-forward-ios" size={14} color="#a48c7a" />
-                </View>
-                <Text className="text-on-surface-variant text-xs mb-4">Monday, Oct 23 • 12:45 PM</Text>
-                <View className="flex-row items-center flex-wrap gap-2">
-                  <View className="flex-row items-center px-3 py-1 bg-surface-container-high rounded-full">
-                    <MaterialIcons name="local-fire-department" size={14} color="#e9c349" />
-                    <Text className="text-xs font-bold text-secondary uppercase tracking-wider ml-1">420 KCAL</Text>
-                  </View>
-                  <View className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                    <Text className="text-[10px] font-black text-primary uppercase tracking-widest">High Fiber</Text>
-                  </View>
-                </View>
-              </View>
+          {isLoading ? (
+            <View className="py-10 items-center justify-center">
+              <ActivityIndicator size="large" color="#e9c349" />
+              <Text className="text-on-surface-variant mt-4 font-body">Fetching your culinary archive...</Text>
             </View>
-          </TouchableOpacity>
-
-          {/* Entry 2 */}
-          <TouchableOpacity className="bg-surface-container-low rounded-[24px] p-1 shadow-lg shadow-primary/5 mb-6">
-            <View className="flex-row p-4 bg-surface-container rounded-[20px]">
-              <View className="w-28 h-28 rounded-xl overflow-hidden mr-4">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAM9aNrFK_ClyxMxIFxGsXUkFUg1p8ZirVsDmS0cZiQZRRoz3_e2-wGnfTD6Gs4B8hBZd6NXWYY2cK66Ob2sTUM6A3mgMFExnnx1Q9YAGKJyDUubL68RcUp1RheldrUMrdiTpGYLPbS60vQ2pp7aKuoeDcINC6mYn76X9FZMSL0I1OSM80SNH0c7OjsrxSunmQCrMo1mYONuytFuhqLOppFTQ2Vdv8TI7p7yFj8mk9PfZ87rAiYDdrzP0Q6pb62ExzLrA6JqpRk9ElC' }} className="w-full h-full object-cover" />
-              </View>
-              <View className="flex-1 justify-center">
-                <View className="flex-row justify-between items-start mb-1">
-                  <Text className="text-xl font-headline font-bold text-on-surface leading-tight flex-1">Ahi Tuna Meditation</Text>
-                  <MaterialIcons name="arrow-forward-ios" size={14} color="#a48c7a" />
-                </View>
-                <Text className="text-on-surface-variant text-xs mb-4">Sunday, Oct 22 • 7:15 PM</Text>
-                <View className="flex-row items-center flex-wrap gap-2">
-                  <View className="flex-row items-center px-3 py-1 bg-surface-container-high rounded-full">
-                    <MaterialIcons name="local-fire-department" size={14} color="#e9c349" />
-                    <Text className="text-xs font-bold text-secondary uppercase tracking-wider ml-1">580 KCAL</Text>
-                  </View>
-                  <View className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                    <Text className="text-[10px] font-black text-primary uppercase tracking-widest">Protein+</Text>
-                  </View>
-                </View>
-              </View>
+          ) : !meals || meals.length === 0 ? (
+            <View className="py-10 items-center justify-center bg-surface-container-low rounded-[24px] px-6">
+              <MaterialIcons name="restaurant-menu" size={48} color="#4d2600" className="mb-4" />
+              <Text className="font-headline text-lg text-white font-bold mb-2">No Meals Logged Yet</Text>
+              <Text className="text-on-surface-variant text-center font-body text-sm">Scan your first dish to start building your personal TasteTwin archive.</Text>
             </View>
-          </TouchableOpacity>
-
-          {/* Entry 3 */}
-          <TouchableOpacity className="bg-surface-container-low rounded-[24px] p-1 shadow-lg shadow-primary/5">
-            <View className="flex-row p-4 bg-surface-container rounded-[20px]">
-              <View className="w-28 h-28 rounded-xl overflow-hidden mr-4">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLfbUNjNP12rDgTaS82IeXfeOO0eYDwnz5b_VyIHxAdP9yDR95wPf1VsESQ927deSuRnvOz8E4Wxy42T3R5vNNis0LqMWCeuhZxNicIeUbQU9DLn4W1DeJS6onuGVPtub3FC_2JyX6QXk7W00dcC0Z4cDUfKhtmfNZgyKhav0l6IED_0zjtWoqubAhs17nszrVBSQgGf0UNDOk83c7qV8ID3WitXprUMGD-Qmzy8wZg6VpZqlBq60-NQnBajVWSkerzntkxFPp_euK' }} className="w-full h-full object-cover" />
-              </View>
-              <View className="flex-1 justify-center">
-                <View className="flex-row justify-between items-start mb-1">
-                  <Text className="text-xl font-headline font-bold text-on-surface leading-tight flex-1">Morning Berry Infusion</Text>
-                  <MaterialIcons name="arrow-forward-ios" size={14} color="#a48c7a" />
-                </View>
-                <Text className="text-on-surface-variant text-xs mb-4">Sunday, Oct 22 • 08:30 AM</Text>
-                <View className="flex-row items-center flex-wrap gap-2">
-                  <View className="flex-row items-center px-3 py-1 bg-surface-container-high rounded-full">
-                    <MaterialIcons name="local-fire-department" size={14} color="#e9c349" />
-                    <Text className="text-xs font-bold text-secondary uppercase tracking-wider ml-1">310 KCAL</Text>
+          ) : (
+            meals.map((meal) => (
+              <TouchableOpacity key={meal.id} className="bg-surface-container-low rounded-[24px] p-1 shadow-lg shadow-primary/5 mb-6">
+                <View className="flex-row p-4 bg-surface-container rounded-[20px]">
+                  <View className="w-28 h-28 rounded-xl overflow-hidden mr-4">
+                    <Image source={{ uri: meal.image_url || 'https://via.placeholder.com/150' }} className="w-full h-full object-cover" />
                   </View>
-                  <View className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                    <Text className="text-[10px] font-black text-primary uppercase tracking-widest">Antioxidant</Text>
+                  <View className="flex-1 justify-center">
+                    <View className="flex-row justify-between items-start mb-1">
+                      <Text className="text-xl font-headline font-bold text-on-surface leading-tight flex-1" numberOfLines={2}>{meal.name}</Text>
+                      <MaterialIcons name="arrow-forward-ios" size={14} color="#a48c7a" />
+                    </View>
+                    <Text className="text-on-surface-variant text-xs mb-4">{formatDate(meal.created_at)}</Text>
+                    <View className="flex-row items-center flex-wrap gap-2">
+                      <View className="flex-row items-center px-3 py-1 bg-surface-container-high rounded-full">
+                        <MaterialIcons name="local-fire-department" size={14} color="#e9c349" />
+                        <Text className="text-xs font-bold text-secondary uppercase tracking-wider ml-1">{meal.calories} KCAL</Text>
+                      </View>
+                      {meal.flavor_tags && meal.flavor_tags.length > 0 && (
+                        <View className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+                          <Text className="text-[10px] font-black text-primary uppercase tracking-widest">{meal.flavor_tags[0]}</Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                 </View>
-              </View>
-            </View>
-          </TouchableOpacity>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
       </ScrollView>
