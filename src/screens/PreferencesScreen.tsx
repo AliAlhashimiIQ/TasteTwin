@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/AuthContext';
 import { useProfile, useUpdateTasteProfile } from '../hooks/useProfile';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DIET_OPTIONS = [
   { key: 'Vegetarian', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBk8Ma7zfm-fe9Oxok_4bOO2gpwjvMaoOqEaVg-Hm413KdvYQRgEcDk2rwr84akN7FqufvdocS-YxJfYWKFvFlSuvErHsBayhQIKnvgQ7JlO9Sq5-m8bh2Hva5UOocOgAUlkcODEmtd7IQKZ-hTlM9KUozutpKj8D4XnZxLneDsnTMA1ysqXURbH6qpVkPhkD6UPmXYnQDeTtUgUcfMkrS7STHLWIgvPuecGbOiadBVFxQjo2OWenyDcxOK4XHPWgHbQJ3HE0ZF80Mb' },
@@ -104,7 +105,6 @@ export const PreferencesScreen = ({ navigation }: any) => {
       bitter: selectedTastes.includes('Bitter') ? 1 : 0,
     };
 
-    // Add extended flavors as additional affinities
     if (selectedTastes.includes('Savory')) flavorAffinities.savory = 1;
     if (selectedTastes.includes('Smoky')) flavorAffinities.smoky = 1;
     if (selectedTastes.includes('Tangy')) flavorAffinities.tangy = 1;
@@ -116,21 +116,14 @@ export const PreferencesScreen = ({ navigation }: any) => {
         flavor_affinities: flavorAffinities as any,
         favorite_cuisines: selectedCuisines,
       });
-      Alert.alert('Success', 'Your palate profile has been saved!');
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      }
+      // Mark onboarding as complete so we never auto-redirect again
+      await AsyncStorage.setItem('tastetwin.onboarding_complete', 'true');
+      await AsyncStorage.removeItem('tastetwin.needs_preferences');
+      Alert.alert('Palate Saved! 🎉', 'Your taste profile is ready. Enjoy your personalized experience!', [
+        { text: 'Let\'s Go', onPress: () => navigation.goBack() },
+      ]);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to save preferences.');
-    }
-  };
-
-  // When the user taps "Save" but isn't authenticated, navigate to Login
-  const handleContinue = () => {
-    if (isAuthenticated) {
-      handleSave();
-    } else {
-      navigation.navigate('Login' as never);
     }
   };
 
@@ -147,7 +140,7 @@ export const PreferencesScreen = ({ navigation }: any) => {
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/80 z-50">
         <View className="flex-row items-center gap-3">
           {navigation.canGoBack() && (
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-10 h-10 rounded-full items-center justify-center bg-surface-container-high"
               onPress={() => navigation.goBack()}
             >
@@ -156,11 +149,14 @@ export const PreferencesScreen = ({ navigation }: any) => {
           )}
           <Text className="text-xl font-black text-white tracking-tighter font-headline">TasteTwin</Text>
         </View>
-        {!isAuthenticated && (
-          <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
-            <Text className="text-secondary text-sm font-medium">Skip</Text>
-          </TouchableOpacity>
-        )}
+        {/* Skip — marks onboarding done and goes straight to home */}
+        <TouchableOpacity onPress={async () => {
+          await AsyncStorage.setItem('tastetwin.onboarding_complete', 'true');
+          await AsyncStorage.removeItem('tastetwin.needs_preferences');
+          navigation.goBack();
+        }}>
+          <Text className="text-secondary text-sm font-medium">Skip</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
@@ -319,7 +315,7 @@ export const PreferencesScreen = ({ navigation }: any) => {
         <View className="mt-8">
           <TouchableOpacity
             className="w-full py-5 rounded-2xl bg-primary flex-row items-center justify-center gap-3 shadow-lg shadow-primary/20"
-            onPress={handleContinue}
+            onPress={handleSave}
             disabled={updateTasteProfile.isPending}
           >
             {updateTasteProfile.isPending ? (
@@ -327,9 +323,9 @@ export const PreferencesScreen = ({ navigation }: any) => {
             ) : (
               <>
                 <Text className="text-on-primary font-headline font-extrabold text-lg">
-                  {isAuthenticated ? 'Save Palate Profile' : 'Continue to Sign Up'}
+                  Save My Palate Profile
                 </Text>
-                <MaterialIcons name={isAuthenticated ? 'restaurant' : 'arrow-forward'} size={20} color="#4d2600" />
+                <MaterialIcons name="restaurant" size={20} color="#4d2600" />
               </>
             )}
           </TouchableOpacity>

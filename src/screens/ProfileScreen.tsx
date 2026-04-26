@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,7 +8,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useProfile } from '../hooks/useProfile';
 import { useMeals } from '../hooks/useMeals';
 import { useFavorites } from '../hooks/useFavorites';
+import { useMacroGoals } from '../hooks/useMacroGoals';
+import type { MacroGoals } from '../hooks/useMacroGoals';
 import type { FlavorAffinities } from '../types/database';
+import Toast from 'react-native-toast-message';
 
 const getTopFlavors = (affinities: FlavorAffinities | undefined): string[] => {
   if (!affinities) return [];
@@ -25,12 +28,66 @@ const getTopFlavors = (affinities: FlavorAffinities | undefined): string[] => {
     });
 };
 
+const MacroGoalInput = ({ label, value, unit, color, onChange }: {
+  label: string; value: string; unit: string; color: string; onChange: (v: string) => void;
+}) => (
+  <View className="w-[48%] bg-surface-container p-4 rounded-2xl border border-outline-variant/10 mb-4">
+    <View className="flex-row items-center mb-3">
+      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color, marginRight: 8 }} />
+      <Text className="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold">{label}</Text>
+    </View>
+    <View className="flex-row items-baseline">
+      <TextInput
+        className="text-2xl font-bold text-white flex-1"
+        value={value}
+        onChangeText={onChange}
+        keyboardType="numeric"
+        placeholder="0"
+        placeholderTextColor="rgba(255,255,255,0.2)"
+        style={{ fontFamily: 'Inter', padding: 0 }}
+      />
+      <Text className="text-on-surface-variant text-xs ml-1">{unit}</Text>
+    </View>
+  </View>
+);
+
 export const ProfileScreen = () => {
   const { signOut, user } = useAuth();
   const navigation = useNavigation();
   const { data: profileData, isLoading } = useProfile();
   const { data: meals } = useMeals();
   const { data: favorites } = useFavorites();
+  const { goals, saveGoals } = useMacroGoals();
+
+  // Local editable state for macro goals
+  const [editCal, setEditCal] = useState(String(goals.calories));
+  const [editProtein, setEditProtein] = useState(String(goals.protein));
+  const [editCarbs, setEditCarbs] = useState(String(goals.carbs));
+  const [editFat, setEditFat] = useState(String(goals.fat));
+
+  // Sync when goals load
+  useEffect(() => {
+    setEditCal(String(goals.calories));
+    setEditProtein(String(goals.protein));
+    setEditCarbs(String(goals.carbs));
+    setEditFat(String(goals.fat));
+  }, [goals]);
+
+  const handleSaveGoals = () => {
+    const newGoals: MacroGoals = {
+      calories: parseInt(editCal) || 0,
+      protein: parseInt(editProtein) || 0,
+      carbs: parseInt(editCarbs) || 0,
+      fat: parseInt(editFat) || 0,
+    };
+    saveGoals(newGoals);
+    Toast.show({
+      type: 'success',
+      text1: 'Macro Goals Updated! 🎯',
+      text2: `${newGoals.calories} cal / ${newGoals.protein}g P / ${newGoals.carbs}g C / ${newGoals.fat}g F`,
+      visibilityTime: 2500,
+    });
+  };
 
   const displayName = profileData?.profile?.full_name || user?.email?.split('@')[0] || 'Explorer';
   const avatarUrl = profileData?.profile?.avatar_url;
@@ -113,6 +170,29 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* ─── Daily Macro Goals ─── */}
+        <View className="mb-12">
+          <View className="flex-row justify-between items-end mb-6">
+            <View>
+              <Text className="text-xl font-headline font-bold text-white">Daily Macro Goals</Text>
+              <Text className="text-on-surface-variant text-xs mt-1">Set your daily nutrition targets</Text>
+            </View>
+            <TouchableOpacity 
+              className="bg-primary px-5 py-2 rounded-full"
+              onPress={handleSaveGoals}
+            >
+              <Text className="text-on-primary text-xs font-bold uppercase tracking-wider">Save</Text>
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row flex-wrap justify-between">
+            <MacroGoalInput label="Calories" value={editCal} unit="kcal" color="#ff8c00" onChange={setEditCal} />
+            <MacroGoalInput label="Protein" value={editProtein} unit="g" color="#e9c349" onChange={setEditProtein} />
+            <MacroGoalInput label="Carbs" value={editCarbs} unit="g" color="#7dd3fc" onChange={setEditCarbs} />
+            <MacroGoalInput label="Fat" value={editFat} unit="g" color="#c084fc" onChange={setEditFat} />
+          </View>
+        </View>
+
+        {/* ─── Flavor DNA ─── */}
         <View className="mb-12">
           <View className="flex-row justify-between items-end mb-6">
             <Text className="text-xl font-headline font-bold text-white">Flavor DNA</Text>

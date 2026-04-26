@@ -67,7 +67,7 @@ export const OnboardingScreen = ({ navigation }: any) => {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
       setCurrentIndex(currentIndex + 1);
     } else {
-      navigation.navigate('Preferences');
+      navigation.navigate('Login');
     }
   };
 

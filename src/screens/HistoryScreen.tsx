@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -8,6 +8,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../navigation/MainStack';
 import { useMeals } from '../hooks/useMeals';
 import { useProfile } from '../hooks/useProfile';
+import { useMacroGoals } from '../hooks/useMacroGoals';
+import { MacroRing } from '../components/MacroRing';
 import { SkeletonCard } from '../components/SkeletonCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -20,12 +22,48 @@ export const HistoryScreen = () => {
   const { data: meals, isLoading, refetch, isRefetching } = useMeals();
   const { data: profileData } = useProfile();
   const profile = profileData?.profile;
+  const { goals } = useMacroGoals();
 
   const formatDate = (isoString: string | undefined) => {
     if (!isoString) return '';
     const date = new Date(isoString);
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
+
+  // Calculate today's consumed macros from meal history
+  const todaysMacros = useMemo(() => {
+    if (!meals) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todaysMeals = meals.filter(meal => {
+      const mealDate = new Date(meal.created_at);
+      mealDate.setHours(0, 0, 0, 0);
+      return mealDate.getTime() === today.getTime();
+    });
+
+    return todaysMeals.reduce(
+      (acc, meal) => ({
+        calories: acc.calories + (meal.calories || 0),
+        protein: acc.protein + (meal.protein || 0),
+        carbs: acc.carbs + (meal.carbs || 0),
+        fat: acc.fat + (meal.fat || 0),
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+  }, [meals]);
+
+  const todayMealCount = useMemo(() => {
+    if (!meals) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return meals.filter(meal => {
+      const mealDate = new Date(meal.created_at);
+      mealDate.setHours(0, 0, 0, 0);
+      return mealDate.getTime() === today.getTime();
+    }).length;
+  }, [meals]);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -59,10 +97,58 @@ export const HistoryScreen = () => {
         }
       >
         {/* Editorial Header Section */}
-        <View className="mb-10">
+        <View className="mb-8">
           <Text className="text-4xl font-headline font-extrabold tracking-tight text-on-surface mb-2">History</Text>
           <Text className="text-on-surface-variant font-body">Your digital sommelier's archive of culinary explorations.</Text>
         </View>
+
+        {/* ─── Today's Macro Dashboard ─── */}
+        <Animated.View entering={FadeInDown.springify()}>
+          <View className="bg-surface-container p-6 rounded-3xl mb-10 border border-outline-variant/10">
+            <View className="flex-row items-center justify-between mb-5">
+              <View>
+                <Text className="text-lg font-headline font-bold text-white">Today's Nutrition</Text>
+                <Text className="text-on-surface-variant text-xs mt-1">
+                  {todayMealCount} meal{todayMealCount !== 1 ? 's' : ''} logged today
+                </Text>
+              </View>
+              <View className="bg-primary/15 px-3 py-1.5 rounded-full border border-primary/20">
+                <Text className="text-primary text-[10px] font-bold uppercase tracking-wider">Remaining</Text>
+              </View>
+            </View>
+            
+            <View className="flex-row justify-between">
+              <MacroRing
+                label="Cal"
+                current={todaysMacros.calories}
+                goal={goals.calories}
+                unit="kcal"
+                color="#ff8c00"
+              />
+              <MacroRing
+                label="Protein"
+                current={todaysMacros.protein}
+                goal={goals.protein}
+                unit="g"
+                color="#e9c349"
+              />
+              <MacroRing
+                label="Carbs"
+                current={todaysMacros.carbs}
+                goal={goals.carbs}
+                unit="g"
+                color="#7dd3fc"
+              />
+              <MacroRing
+                label="Fat"
+                current={todaysMacros.fat}
+                goal={goals.fat}
+                unit="g"
+                color="#c084fc"
+              />
+            </View>
+          </View>
+        </Animated.View>
 
         {/* Modern Filter and Sort */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-10 overflow-visible" contentContainerStyle={{ paddingRight: 24 }}>
