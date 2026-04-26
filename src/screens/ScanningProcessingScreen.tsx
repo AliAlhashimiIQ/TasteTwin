@@ -49,7 +49,7 @@ export const ScanningProcessingScreen = () => {
       
       try {
         const result = await analyzeMutation.mutateAsync({ imageUri, userId: user.id });
-        navigation.replace('PredictionResult', { mealData: result });
+        navigation.replace('PredictionResult', { mealData: result as any });
       } catch (error: any) {
         Alert.alert('Analysis Failed', error.message || 'Could not analyze image.');
         navigation.goBack();

@@ -491,9 +491,9 @@ CREATE POLICY "Users can view all meals" ON public.meal_logs FOR SELECT USING (t
 | 6 | 4B: Camera & Upload | Medium | ✅ Done |
 | 7 | 4C: AI Meal Analysis | Large | ✅ Done |
 | 8 | 4D: History & Favorites | Medium | ✅ Done |
-| 9 | 4E: Home Screen Dynamic | Medium | 3D, 4D |
-| 10 | 5A: Twin Matching | Medium | 3D |
-| 11 | 5B: AI Recommendations | Medium | 4C |
+| 9 | 4E: Home Screen Dynamic | Medium | ✅ Done |
+| 10 | 5A: Twin Matching | Medium | ✅ Done |
+| 11 | 5B: AI Recommendations | Medium | ✅ Done |
 | 12 | 6A: Image Performance | Small | None |
 | 13 | 6B: Error Handling | Small | 3D |
 | 14 | 6C: Animations | Small | None |

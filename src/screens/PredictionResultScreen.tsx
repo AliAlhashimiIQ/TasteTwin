@@ -21,12 +21,10 @@ export const PredictionResultScreen = () => {
   const handleSaveMeal = async () => {
     if (!user || !mealData) return;
     try {
-      await createMeal.mutateAsync({
-        user_id: user.id,
-        ...mealData
-      });
+      const { id, user_id, created_at, ...mealToSave } = mealData as any;
+      await createMeal.mutateAsync(mealToSave);
       Alert.alert('Success', 'Meal saved to your history!');
-      navigation.navigate('MainTabs', { screen: 'Home' });
+      navigation.navigate('MainTabs');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to save meal.');
     }

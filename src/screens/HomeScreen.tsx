@@ -1,10 +1,23 @@
-import React from 'react';
-import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, SafeAreaView, Platform, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useProfile } from '../hooks/useProfile';
+import { useMeals } from '../hooks/useMeals';
 
 export const HomeScreen = () => {
   const navigation = useNavigation();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: profileData, isLoading: isLoadingProfile } = useProfile();
+  const { data: mealsData, isLoading: isLoadingMeals } = useMeals();
+  const profile = profileData?.profile;
+
+  const filteredMeals = useMemo(() => {
+    if (!mealsData) return [];
+    if (!searchQuery.trim()) return mealsData.slice(0, 2);
+    return mealsData.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [mealsData, searchQuery]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" >
@@ -13,7 +26,7 @@ export const HomeScreen = () => {
         <View className="flex-row items-center space-x-3">
           <View className="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBLQhzh_0yMEhsWmEYll1mte5bm8kq8dnO9By8Nzk_8BMXsbraVeWRIlDbBnVb_lyO5E4J8316wwvRBQcvvVFsa5GuS74kcGgcfX5KVLpZ-BBWJlYKVIbcfXM_wHn6TpSkL1Aoev3daHPqCDLlLWgNTYEKu2aLgOe78a2WrllN6kRFJ4lVxrHUTNzATH8_jQYO2FurkQIOWLZwWQ5zluKhDK3eKUXSJDkKCAf1eXecvwip6l8J4cYpJp5-bEvL_I9qmwM4ri1eB5CZ' }}
+              source={{ uri: profile?.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBLQhzh_0yMEhsWmEYll1mte5bm8kq8dnO9By8Nzk_8BMXsbraVeWRIlDbBnVb_lyO5E4J8316wwvRBQcvvVFsa5GuS74kcGgcfX5KVLpZ-BBWJlYKVIbcfXM_wHn6TpSkL1Aoev3daHPqCDLlLWgNTYEKu2aLgOe78a2WrllN6kRFJ4lVxrHUTNzATH8_jQYO2FurkQIOWLZwWQ5zluKhDK3eKUXSJDkKCAf1eXecvwip6l8J4cYpJp5-bEvL_I9qmwM4ri1eB5CZ' }}
               className="w-full h-full object-cover"
             />
           </View>
@@ -29,7 +42,7 @@ export const HomeScreen = () => {
         <View className="space-y-6 mb-8">
           <View className="space-y-1 mb-6">
             <Text className="text-on-surface-variant font-body text-sm uppercase tracking-widest">Welcome back</Text>
-            <Text className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mt-1">Good evening, Alex</Text>
+            <Text className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mt-1">Good evening, {profile?.full_name?.split(' ')[0] || 'Chef'}</Text>
           </View>
 
           {/* Glassmorphic Search */}
@@ -39,6 +52,8 @@ export const HomeScreen = () => {
               className="w-full bg-surface-container-lowest rounded-xl py-4 pl-12 pr-4 text-on-surface font-body"
               placeholder="Find a recipe or flavor profile..."
               placeholderTextColor="#a48c7a"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
           </View>
         </View>
@@ -134,43 +149,42 @@ export const HomeScreen = () => {
 
         {/* Recent Meals Vertical List */}
         <View className="mb-4">
-          <Text className="font-headline text-2xl font-bold text-on-surface mb-4">Recent Journey</Text>
+          <Text className="font-headline text-2xl font-bold text-on-surface mb-4">
+            {searchQuery.trim() ? 'Search Results' : 'Recent Journey'}
+          </Text>
           <View className="space-y-4">
-            {/* Item 1 */}
-            <TouchableOpacity className="flex-row items-center bg-surface-container rounded-xl p-4 mb-4">
-              <View className="w-20 h-20 rounded-lg overflow-hidden">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPsgxFXZlcbdkjvA7kxfJnk6msowmGsPRmK2RxAI79v9cydqJNTiJgOHMWo6DDGjaDbEHUrhzp0KWDVXW7u2y_1R_cm3txyebcsIWdxbGf8pQcwTzPn1ixWrD5TVOyqukTQW6Rm5sCIOQYPRoLVIsCGnCsqtHOanfRoeqITthdUq37WylP1tsOvT5Bam-dQtWncuXuAZvtfVR5Ed_GglWv7P9s9XQet_uy6YooxyBZYrSM68aA9507XRZN0LKMUoyv_JaLENXFXVk9' }} className="w-full h-full object-cover" />
+            {isLoadingMeals ? (
+              <ActivityIndicator size="small" color="#ff8c00" />
+            ) : filteredMeals.length > 0 ? (
+              filteredMeals.map((meal) => (
+                <TouchableOpacity key={meal.id} className="flex-row items-center bg-surface-container rounded-xl p-4 mb-2">
+                  <View className="w-20 h-20 rounded-lg overflow-hidden border border-outline-variant/10">
+                    <Image source={{ uri: meal.image_url || 'https://via.placeholder.com/150' }} className="w-full h-full object-cover" />
+                  </View>
+                  <View className="flex-1 ml-4">
+                    <View className="flex-row justify-between items-start mb-1">
+                      <Text className="font-headline font-bold text-white text-base truncate pr-2 flex-1" numberOfLines={1}>{meal.name}</Text>
+                      <Text className="text-outline text-[10px] font-medium uppercase tracking-tighter shrink-0">
+                        {meal.created_at ? new Date(meal.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+                      </Text>
+                    </View>
+                    <Text className="text-on-surface-variant text-xs">{meal.restaurant || 'Home Cooked'}</Text>
+                    {meal.location && (
+                      <View className="flex-row items-center mt-2">
+                        <MaterialIcons name="location-on" size={12} color="#e9c349" />
+                        <Text className="text-outline text-[10px] ml-1">{meal.location}</Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View className="bg-surface-container rounded-xl p-6 items-center border border-outline-variant/10">
+                <Text className="text-on-surface-variant text-sm italic text-center">
+                  {searchQuery.trim() ? 'No meals found matching your search.' : 'No meals logged yet. Scan your first dish!'}
+                </Text>
               </View>
-              <View className="flex-1 ml-4">
-                <View className="flex-row justify-between items-start mb-1">
-                  <Text className="font-headline font-bold text-white text-base">Miyagi Oysters</Text>
-                  <Text className="text-outline text-[10px] font-medium uppercase tracking-tighter">2h ago</Text>
-                </View>
-                <Text className="text-on-surface-variant text-xs">The Oyster Bar & Grille</Text>
-                <View className="flex-row items-center mt-2">
-                  <MaterialIcons name="location-on" size={12} color="#e9c349" />
-                  <Text className="text-outline text-[10px] ml-1">San Francisco, CA</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            {/* Item 2 */}
-            <TouchableOpacity className="flex-row items-center bg-surface-container rounded-xl p-4">
-              <View className="w-20 h-20 rounded-lg overflow-hidden">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxoOCxr1a4znwf0oRY3m4mDuW_W0zgbWxkigbgG03ujBGvmqbLjAbnyhKpuDmDRy30yoQVb-gvziVAxarX1xIZT6JWlGNN9FpZ9Ijm71YPghzpof89zGHyAoIWgdeR4Segp1bvTjktluec42flqOC0a_uHorY6vSr2kSlv30Q9k3UOmw9DILoTiGQUCravx0T_ALDCz_W9NlcVtD9gPEzpzHv9rnAOSGGlBv600yxClE89xF8nsCLLb8a53aGidfNTPAOoTVPoteJS' }} className="w-full h-full object-cover" />
-              </View>
-              <View className="flex-1 ml-4">
-                <View className="flex-row justify-between items-start mb-1">
-                  <Text className="font-headline font-bold text-white text-base">Har Gow Dim Sum</Text>
-                  <Text className="text-outline text-[10px] font-medium uppercase tracking-tighter">Yesterday</Text>
-                </View>
-                <Text className="text-on-surface-variant text-xs">Red Lantern Bistro</Text>
-                <View className="flex-row items-center mt-2">
-                  <MaterialIcons name="location-on" size={12} color="#e9c349" />
-                  <Text className="text-outline text-[10px] ml-1">Chinatown District</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+            )}
           </View>
         </View>
 
