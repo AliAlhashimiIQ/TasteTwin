@@ -28,8 +28,10 @@ export const OnboardingScreen = () => {
           {/* Main Twin Visual */}
           <View className="w-[65%] h-[60%] rounded-3xl overflow-hidden shadow-2xl relative mb-4">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuARHXoQT_EDC7Q8qVFfAWGCnxNBKJQjlOh7RDEKDggAhVu24D7DELInglj1DzER_hBq_mTo104duGGD1lhpojPN4AXhAgncV543RC-EJFYxgLOSeAL0260sv1w2yTWz7HTf06NANuGn_nhkP6kQWg4bbfi54l97vqn1s8P_8e0heFDDA6plGv0-F2JDyTnjWYNPokRw99d7ETfFVugQHCncq3xTpc9nTqVctyj-QmMnytg4my1ytK6txFqDhTwyZsnOlrU_GguIOYwB' }}
-              className="w-full h-full object-cover grayscale-[30%]"
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuARHXoQT_EDC7Q8qVFfAWGCnxNBKJQjlOh7RDEKDggAhVu24D7DELInglj1DzER_hBq_mTo104duGGD1lhpojPN4AXhAgncV543RC-EJFYxgLOSeAL0260sv1w2yTWz7HTf06NANuGn_nhkP6kQWg4bbfi54l97vqn1s8P_8e0heFDDA6plGv0-F2JDyTnjWYNPokRw99d7ETfFVugQHCncq3xTpc9nTqVctyj-QmMnytg4my1ytK6txFqDhTwyZsnOlrU_GguIOYwB"
+              contentFit="cover"
+              transition={300}
+              style={{ width: '100%', height: '100%' }}
             />
             <View className="absolute inset-0 bg-background/30" />
             <View className="absolute bottom-4 left-4 flex-row items-center space-x-2">
@@ -41,8 +43,10 @@ export const OnboardingScreen = () => {
           {/* Secondary Taste Profile Visual */}
           <View className="w-[30%] h-[40%] rounded-3xl overflow-hidden bg-surface-container-low/70 border border-outline-variant/10">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJ74exu1_huCrgy1H1Yd2Im2TPM4mvMwXxmsnu4_HkLAv1da1k0CBqhVZFVcu1O9QLInL_BnDzocoPgWTpFXj3EKAr-4TGEjWakp7Dlt1wstTFECEFNlzCEd9zSgde7y_BJMUmSCJBIC5cpAIL0rkutzipU5HpmaeIf1U2k5T-tiZZqfOCcDqRtu37mKyeQmTmZ5vA8C1lse9RJnHb6ZaRWM8Zjcc_ay2sNbQBp-hIzfFqNHsfkZGUULHs8lt4qaQpN-XnQ4OgMwDY' }}
-              className="w-full h-full object-cover"
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ74exu1_huCrgy1H1Yd2Im2TPM4mvMwXxmsnu4_HkLAv1da1k0CBqhVZFVcu1O9QLInL_BnDzocoPgWTpFXj3EKAr-4TGEjWakp7Dlt1wstTFECEFNlzCEd9zSgde7y_BJMUmSCJBIC5cpAIL0rkutzipU5HpmaeIf1U2k5T-tiZZqfOCcDqRtu37mKyeQmTmZ5vA8C1lse9RJnHb6ZaRWM8Zjcc_ay2sNbQBp-hIzfFqNHsfkZGUULHs8lt4qaQpN-XnQ4OgMwDY"
+              contentFit="cover"
+              transition={200}
+              style={{ width: '100%', height: '100%' }}
             />
           </View>
 
@@ -50,10 +54,10 @@ export const OnboardingScreen = () => {
           <View className="w-full h-[30%] flex-row items-center justify-between px-6 bg-surface-container-low/50 rounded-3xl border border-outline-variant/10">
             <View className="flex-row">
               <View className="w-12 h-12 rounded-full border-2 border-background bg-surface-container overflow-hidden z-10">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDhpg2ioRjWv748Amz2LLykmK9zASk51cU5_IuoSQI5siP80sER2vbie80gvd7AT1pbdyxbPPFiR0hAxpeQBpgoLs3PMMMdAZlz0jCnSRq6LcOHYztXnA-Hz7iI4JAQFhEWRFs5wKeIJYZOv-nl9MOmLdTlkEWOixdHMdCzF_1t_Npc1nVrwnrq5UWx1PdO5A007kkuPSZSyWsu7F4Z6tec37D68yAMkhWHOOLG53ihbCioigMyOq76d6v_tC0209Aa2DGIcRs2eN8' }} className="w-full h-full" />
+                <Image source="https://lh3.googleusercontent.com/aida-public/AB6AXuCDhpg2ioRjWv748Amz2LLykmK9zASk51cU5_IuoSQI5siP80sER2vbie80gvd7AT1pbdyxbPPFiR0hAxpeQBpgoLs3PMMMdAZlz0jCnSRq6LcOHYztXnA-Hz7iI4JAQFhEWRFs5wKeIJYZOv-nl9MOmLdTlkEWOixdHMdCzF_1t_Npc1nVrwnrq5UWx1PdO5A007kkuPSZSyWsu7F4Z6tec37D68yAMkhWHOOLG53ihbCioigMyOq76d6v_tC0209Aa2DGIcRs2eN8" contentFit="cover" style={{ width: '100%', height: '100%' }} />
               </View>
               <View className="w-12 h-12 rounded-full border-2 border-background bg-surface-container overflow-hidden -ml-4">
-                <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCzF3pdRlpgExff8ID33DqfJVXyMcK0EJzQQ0psgRon5D9tY3dwbZ4KT9Xr-gCeAPv7-pkAk4tDA1E8rJuyZEmlGbiBBejB2N1CILdpf70H_JwTCaVcdb3h2bzEWUQdhx1Fo4sukCQ5G3RIJB0CTyVn_JW4nCy5lhdE80smu9vHX4vCk4D-boP2TOreMICkUq-zLn_b7YU5ggarKRmEsW-HVAGE3AorWfUWLkhgD6EsYUU8nNfKNB-6xHsH2CN4pF7pYuuBWDLvJniv' }} className="w-full h-full" />
+                <Image source="https://lh3.googleusercontent.com/aida-public/AB6AXuCzF3pdRlpgExff8ID33DqfJVXyMcK0EJzQQ0psgRon5D9tY3dwbZ4KT9Xr-gCeAPv7-pkAk4tDA1E8rJuyZEmlGbiBBejB2N1CILdpf70H_JwTCaVcdb3h2bzEWUQdhx1Fo4sukCQ5G3RIJB0CTyVn_JW4nCy5lhdE80smu9vHX4vCk4D-boP2TOreMICkUq-zLn_b7YU5ggarKRmEsW-HVAGE3AorWfUWLkhgD6EsYUU8nNfKNB-6xHsH2CN4pF7pYuuBWDLvJniv" contentFit="cover" style={{ width: '100%', height: '100%' }} />
               </View>
             </View>
             <View className="flex-1 h-[1px] mx-4 bg-[#ffb77d]/50" />

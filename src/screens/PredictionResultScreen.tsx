@@ -59,8 +59,11 @@ export const PredictionResultScreen = () => {
         {/* Hero Section / Food Image */}
         <View className="w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative mb-8">
           <Image 
-            source={{ uri: mealData.image_url || 'https://via.placeholder.com/400' }} 
-            className="w-full h-full object-cover" 
+            source={mealData.image_url || 'https://via.placeholder.com/400'}
+            placeholder="L6PZfSi_.AyE_3t7t7R**0o#DgR4"
+            contentFit="cover"
+            transition={300}
+            style={{ width: '100%', height: '100%' }}
           />
           <View className="absolute inset-0 bg-black/40" />
           <View className="absolute bottom-6 left-6 right-6">

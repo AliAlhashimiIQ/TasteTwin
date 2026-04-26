@@ -150,7 +150,7 @@ export const PreferencesScreen = ({ navigation }: any) => {
                   onPress={() => setSelectedDiet(isActive ? 'None' : diet.key)}
                 >
                   <View className={`absolute inset-0 ${isActive ? 'bg-black/40' : 'bg-black/60'} z-10`} />
-                  <Image source={{ uri: diet.image }} className={`w-full h-full object-cover ${isActive ? '' : 'opacity-60'}`} />
+                  <Image source={diet.image} contentFit="cover" transition={200} style={{ width: '100%', height: '100%', opacity: isActive ? 1 : 0.6 }} />
                   <View className="absolute bottom-4 left-4 z-20">
                     <Text className={`font-headline font-bold uppercase tracking-wider text-sm mb-1 ${isActive ? 'text-white' : 'text-on-surface opacity-80'}`}>{diet.key}</Text>
                     {isActive && <View className="w-6 h-1 bg-primary rounded-full" />}

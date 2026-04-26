@@ -6,12 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import { useRecommendations } from '../hooks/useRecommendations';
 import type { Recommendation } from '../hooks/useRecommendations';
 
+const BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
+
 const FeaturedCard = ({ rec }: { rec: Recommendation }) => (
   <TouchableOpacity className="w-full bg-surface-container rounded-xl overflow-hidden shadow-2xl relative border border-outline-variant/5">
     <View className="h-[400px] w-full relative">
       <Image 
-        source={{ uri: rec.image_url }}
-        className="w-full h-full object-cover"
+        source={rec.image_url}
+        placeholder={BLURHASH}
+        contentFit="cover"
+        transition={300}
+        style={{ width: '100%', height: '100%' }}
       />
       <View className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
       <View className="absolute bottom-6 left-6 right-6">
@@ -47,7 +52,13 @@ const FeaturedCard = ({ rec }: { rec: Recommendation }) => (
 const SecondaryCard = ({ rec }: { rec: Recommendation }) => (
   <TouchableOpacity className="w-[48%] bg-surface-container rounded-xl overflow-hidden shadow-xl border border-outline-variant/5">
     <View className="h-40 relative">
-      <Image source={{ uri: rec.image_url }} className="w-full h-full object-cover" />
+      <Image 
+        source={rec.image_url}
+        placeholder={BLURHASH}
+        contentFit="cover"
+        transition={200}
+        style={{ width: '100%', height: '100%' }}
+      />
       <View className="absolute top-2 right-2 bg-background/60 px-2 py-1 rounded-full">
         <Text className="text-white text-[8px] font-black uppercase">{rec.match_percentage}% Match</Text>
       </View>
@@ -66,7 +77,13 @@ const SecondaryCard = ({ rec }: { rec: Recommendation }) => (
 
 const CompactCard = ({ rec }: { rec: Recommendation }) => (
   <TouchableOpacity className="w-32 bg-surface-container-low p-3 rounded-xl border border-outline-variant/5 mr-4">
-    <Image source={{ uri: rec.image_url }} className="w-full h-20 object-cover rounded-lg mb-3" />
+    <Image 
+      source={rec.image_url}
+      placeholder={BLURHASH}
+      contentFit="cover"
+      transition={200}
+      style={{ width: '100%', height: 80, borderRadius: 8, marginBottom: 12 }}
+    />
     <Text className="text-xs font-bold text-white leading-tight mb-1" numberOfLines={1}>{rec.name}</Text>
     <Text className="text-[10px] text-primary">{rec.match_percentage}% ★</Text>
   </TouchableOpacity>

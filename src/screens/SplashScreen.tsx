@@ -25,9 +25,10 @@ export const SplashScreen = () => {
       {/* Hero Canvas Image */}
       <View className="absolute inset-0 opacity-40">
         <Image 
-          source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB9sPVd3iSBVwdclo6E5TVKi_307bv1ZcuO_YIQpwDV3or-2DQI-XqnbprOQNzJ-TWdU6Azq7I8f6kizlheO9wlHqte7IbABT5wysKMgHoEMDJqi3SW3KWufsUzl7nIW5bWkf2iMZ4VYvFvKExgNCeUAOSfPBzPb_9d0W9Vsp-fxANxWjAXRpxPbLtMEsQiHa-FqXSD9c7kwJceBJbcRXVsQPIoorEIwZMPzfoGzSCnFqS99mb4Ucl5NaqErN_0Sar2v-dAlKWQgRTQ' }} 
-          className="w-full h-full object-cover"
-          style={{ opacity: 0.5 }}
+          source="https://lh3.googleusercontent.com/aida-public/AB6AXuB9sPVd3iSBVwdclo6E5TVKi_307bv1ZcuO_YIQpwDV3or-2DQI-XqnbprOQNzJ-TWdU6Azq7I8f6kizlheO9wlHqte7IbABT5wysKMgHoEMDJqi3SW3KWufsUzl7nIW5bWkf2iMZ4VYvFvKExgNCeUAOSfPBzPb_9d0W9Vsp-fxANxWjAXRpxPbLtMEsQiHa-FqXSD9c7kwJceBJbcRXVsQPIoorEIwZMPzfoGzSCnFqS99mb4Ucl5NaqErN_0Sar2v-dAlKWQgRTQ"
+          contentFit="cover"
+          transition={300}
+          style={{ width: '100%', height: '100%', opacity: 0.5 }}
         />
         <View className="absolute inset-0 bg-[#131313]/80" />
       </View>

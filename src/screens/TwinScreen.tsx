@@ -5,6 +5,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTwinMatch } from '../hooks/useTwinMatch';
 import type { TwinMatch } from '../hooks/useTwinMatch';
 
+const BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
+
 const MatchCard = ({ match, index }: { match: TwinMatch; index: number }) => {
   // Alternate accent color for visual variety
   const isFirst = index === 0;
@@ -16,8 +18,11 @@ const MatchCard = ({ match, index }: { match: TwinMatch; index: number }) => {
     <View className="bg-surface-container rounded-[24px] overflow-hidden shadow-2xl mb-8 border border-outline-variant/10">
       <View className="aspect-[4/5] relative">
         <Image
-          source={{ uri: match.profile.avatar_url || 'https://via.placeholder.com/400' }}
-          className="w-full h-full object-cover"
+          source={match.profile.avatar_url || 'https://via.placeholder.com/400'}
+          placeholder={BLURHASH}
+          contentFit="cover"
+          transition={300}
+          style={{ width: '100%', height: '100%' }}
         />
         <View className="absolute inset-0 bg-background/30" />
         <View className={`absolute top-4 right-4 ${badgeBg} px-4 py-2 rounded-full border ${badgeBorder}`}>
@@ -62,8 +67,11 @@ const CompactMatchCard = ({ match }: { match: TwinMatch }) => (
   <View className="w-[48%] bg-surface-container rounded-3xl overflow-hidden mb-4 border border-outline-variant/10">
     <View className="h-32 relative">
       <Image
-        source={{ uri: match.profile.avatar_url || 'https://via.placeholder.com/200' }}
-        className="w-full h-full object-cover opacity-80"
+        source={match.profile.avatar_url || 'https://via.placeholder.com/200'}
+        placeholder={BLURHASH}
+        contentFit="cover"
+        transition={200}
+        style={{ width: '100%', height: '100%', opacity: 0.8 }}
       />
       <View className="absolute inset-0 bg-black/30 items-center justify-center">
         <Text className="text-white font-headline font-bold text-lg">{match.matchScore}%</Text>
@@ -92,8 +100,11 @@ export const TwinScreen = () => {
         <View className="flex-row items-center space-x-3">
           <View className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTcT2epnVv1zK230bSGAuLRwI6Gc22ujhWh07qrRh4NPZsk0CVAwZYyMIiy_J0fs2-0GVOYb9mfDs-58CqpicET165BRbsPWXDyBtdUGrtIwVONW---R-AwG_waz2qr6j3G3tUMY6qL9H2LIVIec12SMf_xjRNsCkR4_LTUUaZWGJHerfQsf53ndZmt2gOfh9d1a3uu2Tvd-wUZ1FiESUB9gW5OEFy7j9x_M6mn0kKTZmVxXP979obeeT8X71pXufUU_3d4C5X4a2j' }}
-              className="w-full h-full object-cover"
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuDTcT2epnVv1zK230bSGAuLRwI6Gc22ujhWh07qrRh4NPZsk0CVAwZYyMIiy_J0fs2-0GVOYb9mfDs-58CqpicET165BRbsPWXDyBtdUGrtIwVONW---R-AwG_waz2qr6j3G3tUMY6qL9H2LIVIec12SMf_xjRNsCkR4_LTUUaZWGJHerfQsf53ndZmt2gOfh9d1a3uu2Tvd-wUZ1FiESUB9gW5OEFy7j9x_M6mn0kKTZmVxXP979obeeT8X71pXufUU_3d4C5X4a2j"
+              placeholder={BLURHASH}
+              contentFit="cover"
+              transition={200}
+              style={{ width: '100%', height: '100%' }}
             />
           </View>
           <Text className="font-headline font-black text-xl text-white tracking-tighter">TasteTwin</Text>
