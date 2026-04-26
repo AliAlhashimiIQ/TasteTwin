@@ -3,15 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 
-export const SplashScreen = () => {
-  const navigation = useNavigation();
-
+export const SplashScreen = ({ navigation }: any) => {
   // Simulate loading delay then navigate to Onboarding
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.navigate('Onboarding' as never);
+      navigation.navigate('Onboarding');
     }, 3000);
     return () => clearTimeout(timer);
   }, [navigation]);

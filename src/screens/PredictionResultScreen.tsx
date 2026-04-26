@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -8,6 +9,8 @@ import type { RouteProp } from '@react-navigation/native';
 import type { MainStackParamList } from '../navigation/MainStack';
 import { useCreateMeal } from '../hooks/useMeals';
 import { useAuth } from '../lib/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
 
 type PredictionScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'PredictionResult'>;
 type PredictionScreenRouteProp = RouteProp<MainStackParamList, 'PredictionResult'>;
@@ -18,17 +21,42 @@ export const PredictionResultScreen = () => {
   const mealData = route.params?.mealData;
   const { user } = useAuth();
   const createMeal = useCreateMeal();
+  const queryClient = useQueryClient();
 
   const handleSaveMeal = async () => {
     if (!user || !mealData) return;
     try {
       const { id, user_id, created_at, ...mealToSave } = mealData as any;
       await createMeal.mutateAsync(mealToSave);
-      Alert.alert('Success', 'Meal saved to your history!');
+      // Invalidate meals cache so History + Home refresh immediately
+      queryClient.invalidateQueries({ queryKey: ['meals'] });
+      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+      Toast.show({
+        type: 'success',
+        text1: 'Meal Saved! 🍽️',
+        text2: `${mealData.name} has been added to your history.`,
+        visibilityTime: 3000,
+      });
       navigation.navigate('MainTabs');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save meal.');
+      Toast.show({
+        type: 'error',
+        text1: 'Save Failed',
+        text2: error.message || 'Could not save this meal. Try again.',
+        visibilityTime: 4000,
+      });
     }
+  };
+
+  const handleDiscard = () => {
+    Alert.alert(
+      'Discard Meal?',
+      'This analysis will not be saved to your history.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
+      ]
+    );
   };
 
   if (!mealData) {
@@ -174,7 +202,10 @@ export const PredictionResultScreen = () => {
               )}
             </TouchableOpacity>
             
-            <TouchableOpacity className="w-full py-4 bg-transparent border border-outline-variant/30 rounded-2xl flex-row items-center justify-center mb-6">
+            <TouchableOpacity 
+              className="w-full py-4 bg-transparent border border-outline-variant/30 rounded-2xl flex-row items-center justify-center mb-6"
+              onPress={() => navigation.navigate('Recommendations')}
+            >
               <MaterialIcons name="restaurant" size={20} color="#e5e2e1" />
               <Text className="text-on-surface font-headline font-bold text-base ml-2">View Similar Meals</Text>
             </TouchableOpacity>
@@ -196,9 +227,12 @@ export const PredictionResultScreen = () => {
           </View>
 
           <View className="bg-surface-container-low p-6 rounded-3xl items-center mb-8">
-            <Text className="text-xs text-on-surface-variant mb-2">Did we get it wrong?</Text>
-            <TouchableOpacity>
-              <Text className="text-secondary text-sm font-bold underline">Edit Prediction</Text>
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={handleDiscard}
+            >
+              <MaterialIcons name="delete-outline" size={18} color="#ff6b6b" />
+              <Text className="text-[#ff6b6b] text-sm font-bold ml-2">Discard & Go Back</Text>
             </TouchableOpacity>
           </View>
 

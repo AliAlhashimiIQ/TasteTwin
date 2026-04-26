@@ -1,7 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '../navigation/MainStack';
 import { useMeals } from '../hooks/useMeals';
 import { useProfile } from '../hooks/useProfile';
 import { SkeletonCard } from '../components/SkeletonCard';
@@ -9,7 +13,10 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
 
+type HistoryNavigationProp = NativeStackNavigationProp<MainStackParamList>;
+
 export const HistoryScreen = () => {
+  const navigation = useNavigation<HistoryNavigationProp>();
   const { data: meals, isLoading, refetch, isRefetching } = useMeals();
   const { data: profileData } = useProfile();
   const profile = profileData?.profile;
@@ -25,7 +32,10 @@ export const HistoryScreen = () => {
       {/* TopAppBar */}
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/80 z-50">
         <View className="flex-row items-center space-x-3">
-          <View className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/20">
+          <TouchableOpacity 
+            className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/20"
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Profile' } as any)}
+          >
             <Image
               source={profile?.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfyTJsazlUgbP1jfRf1x8A9Cb7m7dGw6HnyaDkLmAapDkHj9VhW2_28FWEvs9lGJQgqQelPl9JiRDN389u7_T9kRsZ_hkCWCHs5DSt4U_iy4fFeIz85fWsUFMrOEVlK_l7jGiHOyURbVFfuksGpDhcm5wdfm3F_jQliABQVaezuMm1WMTLy6NuG0Y1uueRDp3xiKQfVSTSgkeoTy0Ar6peYZLRevapRuCCNJHYKQIpnvU8LpUtbST9khF1tlRFOIU_pZlBdwE9nSoN'}
               placeholder={BLURHASH}
@@ -33,7 +43,7 @@ export const HistoryScreen = () => {
               transition={200}
               style={{ width: '100%', height: '100%' }}
             />
-          </View>
+          </TouchableOpacity>
           <Text className="font-headline font-black text-xl text-white tracking-tighter">TasteTwin</Text>
         </View>
         <TouchableOpacity>
@@ -93,7 +103,10 @@ export const HistoryScreen = () => {
                 key={meal.id}
                 entering={FadeInDown.delay(index * 80).springify()}
               >
-                <TouchableOpacity className="bg-surface-container-low rounded-[24px] p-1 shadow-lg mb-2">
+                <TouchableOpacity 
+                  className="bg-surface-container-low rounded-[24px] p-1 shadow-lg mb-2"
+                  onPress={() => navigation.navigate('MealDetail', { meal })}
+                >
                   <View className="flex-row p-4 bg-surface-container rounded-[20px]">
                     <View className="w-28 h-28 rounded-xl overflow-hidden mr-4">
                       <Image

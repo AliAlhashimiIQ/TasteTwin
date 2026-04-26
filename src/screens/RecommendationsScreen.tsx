@@ -1,15 +1,18 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '../navigation/MainStack';
 import { useRecommendations } from '../hooks/useRecommendations';
 import type { Recommendation } from '../hooks/useRecommendations';
 
 const BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
 
-const FeaturedCard = ({ rec }: { rec: Recommendation }) => (
-  <TouchableOpacity className="w-full bg-surface-container rounded-xl overflow-hidden shadow-2xl relative border border-outline-variant/5">
+const FeaturedCard = ({ rec, onPress }: { rec: Recommendation; onPress: () => void }) => (
+  <TouchableOpacity className="w-full bg-surface-container rounded-xl overflow-hidden shadow-2xl relative border border-outline-variant/5" onPress={onPress}>
     <View className="h-[400px] w-full relative">
       <Image 
         source={rec.image_url}
@@ -29,7 +32,11 @@ const FeaturedCard = ({ rec }: { rec: Recommendation }) => (
           </View>
         </View>
         <Text className="font-headline text-3xl font-bold text-white mb-2 leading-tight">{rec.name}</Text>
-        <Text className="text-on-surface-variant text-sm mb-6 leading-relaxed">{rec.description}</Text>
+        <Text className="text-on-surface-variant text-sm mb-2 leading-relaxed">{rec.description}</Text>
+        <View className="flex-row items-center mb-6">
+          <MaterialIcons name="auto-awesome" size={12} color="#e9c349" />
+          <Text className="text-secondary/80 text-xs ml-1 italic">{rec.reason}</Text>
+        </View>
         <View className="flex-row gap-6 border-t border-outline-variant/15 pt-4">
           <View>
             <Text className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Calories</Text>
@@ -49,8 +56,8 @@ const FeaturedCard = ({ rec }: { rec: Recommendation }) => (
   </TouchableOpacity>
 );
 
-const SecondaryCard = ({ rec }: { rec: Recommendation }) => (
-  <TouchableOpacity className="w-[48%] bg-surface-container rounded-xl overflow-hidden shadow-xl border border-outline-variant/5">
+const SecondaryCard = ({ rec, onPress }: { rec: Recommendation; onPress: () => void }) => (
+  <TouchableOpacity className="w-[48%] bg-surface-container rounded-xl overflow-hidden shadow-xl border border-outline-variant/5" onPress={onPress}>
     <View className="h-40 relative">
       <Image 
         source={rec.image_url}
@@ -65,7 +72,11 @@ const SecondaryCard = ({ rec }: { rec: Recommendation }) => (
     </View>
     <View className="p-4">
       <Text className="font-headline text-lg font-bold text-white mb-2 leading-tight" numberOfLines={2}>{rec.name}</Text>
-      <Text className="text-on-surface-variant text-xs mb-4" numberOfLines={2}>{rec.description}</Text>
+      <Text className="text-on-surface-variant text-xs mb-2" numberOfLines={2}>{rec.description}</Text>
+      <View className="flex-row items-center mb-4">
+        <MaterialIcons name="auto-awesome" size={10} color="#e9c349" />
+        <Text className="text-secondary/70 text-[10px] ml-1 italic flex-1" numberOfLines={1}>{rec.reason}</Text>
+      </View>
       <View className="flex-row justify-between border-t border-outline-variant/10 pt-3">
         <View className="items-center"><Text className="text-[8px] text-on-surface-variant uppercase">P</Text><Text className="text-xs font-bold text-white">{rec.protein}g</Text></View>
         <View className="items-center"><Text className="text-[8px] text-on-surface-variant uppercase">C</Text><Text className="text-xs font-bold text-white">{rec.carbs}g</Text></View>
@@ -75,8 +86,8 @@ const SecondaryCard = ({ rec }: { rec: Recommendation }) => (
   </TouchableOpacity>
 );
 
-const CompactCard = ({ rec }: { rec: Recommendation }) => (
-  <TouchableOpacity className="w-32 bg-surface-container-low p-3 rounded-xl border border-outline-variant/5 mr-4">
+const CompactCard = ({ rec, onPress }: { rec: Recommendation; onPress: () => void }) => (
+  <TouchableOpacity className="w-32 bg-surface-container-low p-3 rounded-xl border border-outline-variant/5 mr-4" onPress={onPress}>
     <Image 
       source={rec.image_url}
       placeholder={BLURHASH}
@@ -90,8 +101,12 @@ const CompactCard = ({ rec }: { rec: Recommendation }) => (
 );
 
 export const RecommendationsScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { data: recommendations, isLoading, error, refetch } = useRecommendations();
+
+  const openRecipe = (rec: Recommendation) => {
+    navigation.navigate('RecipeDetail', { recipe: rec });
+  };
 
   const featured = recommendations?.[0];
   const secondary = recommendations?.slice(1, 3) || [];
@@ -115,7 +130,18 @@ export const RecommendationsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={false} 
+            onRefresh={() => refetch()} 
+            tintColor="#e9c349" 
+            colors={['#e9c349']} 
+          />
+        }
+      >
         {/* Hero Section */}
         <View className="mb-12">
           <View className="flex-row items-center self-start px-4 py-2 rounded-full bg-surface-variant/30 mb-4">
@@ -158,13 +184,13 @@ export const RecommendationsScreen = () => {
         {!isLoading && recommendations && recommendations.length > 0 && (
           <View className="space-y-8">
             {/* Featured Recommendation (Large) */}
-            {featured && <FeaturedCard rec={featured} />}
+            {featured && <FeaturedCard rec={featured} onPress={() => openRecipe(featured)} />}
 
             {/* Secondary Cards Grid */}
             {secondary.length > 0 && (
               <View className="flex-row flex-wrap justify-between gap-y-6 mt-8">
                 {secondary.map((rec, i) => (
-                  <SecondaryCard key={i} rec={rec} />
+                  <SecondaryCard key={i} rec={rec} onPress={() => openRecipe(rec)} />
                 ))}
               </View>
             )}
@@ -181,7 +207,7 @@ export const RecommendationsScreen = () => {
             
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-6 px-6 pb-4" contentContainerStyle={{ paddingRight: 24 }}>
               {trending.map((rec, i) => (
-                <CompactCard key={i} rec={rec} />
+                <CompactCard key={i} rec={rec} onPress={() => openRecipe(rec)} />
               ))}
             </ScrollView>
           </View>

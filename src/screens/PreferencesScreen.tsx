@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/AuthContext';
@@ -10,11 +11,34 @@ const DIET_OPTIONS = [
   { key: 'Keto', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDXa67Hw4tZFB4bGaJ-fIBPkakS4e9ujXv7PQ4p8dsAaLOAp9zDYVFFbJJE0TCIsR1VOHUex2m3oo29mhNtgxB3k1chV6zJHJcPDVdqLV7fA2r5D0YEujX5EyRgQpq_pnkbBf5OgnlmExQ_LAzQ4_UNdkGBbjuDmxgo06VKLmuTyfKVCPChs89OUMC5t99ahgb2SPiQkV706ZdCk8tUA8Q5cBRZxXn7m9DmOP774QlW0sO8PtAkuUac3sOsmGesJEdYWOnVIvO9FL2Y' },
   { key: 'Vegan', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA7bS15sEiliRrsjVVND2jBwUzc1CVNEqlJX1HM6MTfg6N0mT2dehcdJTwZU2C2kcHZiIT4AzyDJZwgg07I1MoNoe7ymMhtSLlUHQhMWwXmB7aMkzFe7Q8qem9Rxxt197TIfr3_5sl8dYOF9kpZQkYiAfVZbbEtFCd3jum8R5sGlN6xoz5FAzVy7pApUHRP_Db95X18ZZQZnAJurVQbfIyFx1Z1rVbreVr22Sx5WE-IghsqybCEP1E67jQhN-bnMdb3oY0o6esj6eJV' },
   { key: 'Paleo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAzC175YEPZ3aH3OVUUMkCmeb65VwUdXhYESwXUe3T_HrtUgAfLcKjO32W6-39GDbvxmsSg_o6FlNR0E3fAP6sAnaw0cXLOQ7L48cUaduM1yVG-rVfG1iASYU7Q1LL5xzIfs41dW43zsN5ohGzlhKLTGNEx3kcgs8GFJQPp5s-qHX84Y0fNfJVW2gxikK9nXXfVmf7u21-FY6x9E9PEwlrjU417nmFLY4Al1iDC3IhPLhcLWqn-W_qZZjL3OboW46EyQYSI4qDxi2tY' },
+  { key: 'Mediterranean', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDgXS3cJRL3X_eJMKlbRQpD-MyUs8VRqOaAiH2c5rm3SCWyhms-HK2S2j0RCrzqhpbgnYOwlaJC5KokOGVFlxpFOFbLDhQlRlz5DJemCNElYhrVN05KveDB10edfkAn7vP4N4z7MCNEZlB7BBxBASh62T5JRoMn_3YIiikbieykpr0xFMYfnyI9J16rO3HtWrqfsDi1IHfhw3iDlj1Oubxb71jRe_FiTaAem9mDh1h0D9moWttO-zV37A7AMem8QpL5LEm1fsTR7BXI' },
+  { key: 'Carnivore', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAhQ1fqIx1dXumGyZfQexCePgaPAHEZsGdQuCUz1A4J7in__MK151vI-m4KH9LSyYsHVaASxtsyjDmp7RvxkdtQ390azTXJRQ_tNE7Je9Vag3tNirRYHNdlqpOmeGxWetoQMl4E2U4-5zo1K_bNY0khWPWwXGJiyMi29uCybD3SjXF20czS7Iy8-Dig9FXcn6auf9Bp0vp9C6r0vcPhUXfi6vz0qCB4VWVDcXCUqUQ0_KvlbwoV4_9rWjV0fKscNjxO5oRUX-rRQrR4' },
 ];
 
-const ALLERGY_OPTIONS = ['Dairy', 'Peanuts', 'Gluten', 'Shellfish', 'Soy', 'Tree Nuts'];
-const TASTE_OPTIONS = ['Spicy', 'Umami', 'Sweet', 'Sour', 'Bitter'];
-const CUISINE_OPTIONS = ['Mediterranean', 'Japanese', 'Mexican', 'Thai', 'Nordic', 'Indian'];
+const ALLERGY_OPTIONS = [
+  'Dairy', 'Peanuts', 'Gluten', 'Shellfish', 'Soy', 'Tree Nuts',
+  'Eggs', 'Fish', 'Sesame', 'Wheat', 'Corn', 'Sulfites'
+];
+
+const TASTE_OPTIONS = ['Spicy', 'Umami', 'Sweet', 'Sour', 'Bitter', 'Savory', 'Smoky', 'Tangy'];
+
+const CUISINE_OPTIONS = [
+  'Mediterranean', 'Japanese', 'Mexican', 'Thai', 'Nordic', 'Indian',
+  'Italian', 'Chinese', 'Korean', 'French', 'Middle Eastern', 'Vietnamese',
+  'Greek', 'Turkish', 'Brazilian', 'Ethiopian'
+];
+
+const COOKING_STYLE_OPTIONS = [
+  'Quick & Easy', 'Gourmet', 'Comfort Food', 'Street Food',
+  'Raw / No Cook', 'Grilled / BBQ', 'Baked', 'Slow Cooked'
+];
+
+const SPICE_LEVELS = [
+  { key: 'mild', label: 'Mild', icon: '🌶️', desc: 'Little to no heat' },
+  { key: 'medium', label: 'Medium', icon: '🌶️🌶️', desc: 'Moderate warmth' },
+  { key: 'hot', label: 'Hot', icon: '🌶️🌶️🌶️', desc: 'Bring the fire' },
+  { key: 'extreme', label: 'Extreme', icon: '🔥', desc: 'Burn it down' },
+];
 
 export const PreferencesScreen = ({ navigation }: any) => {
   const { isAuthenticated } = useAuth();
@@ -27,6 +51,8 @@ export const PreferencesScreen = ({ navigation }: any) => {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [selectedTastes, setSelectedTastes] = useState<string[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+  const [selectedCookingStyles, setSelectedCookingStyles] = useState<string[]>([]);
+  const [selectedSpiceLevel, setSelectedSpiceLevel] = useState<string>('medium');
 
   // Pre-populate from saved data (only runs when authenticated and data loads)
   useEffect(() => {
@@ -63,8 +89,14 @@ export const PreferencesScreen = ({ navigation }: any) => {
     );
   };
 
+  const toggleCookingStyle = (style: string) => {
+    setSelectedCookingStyles(prev =>
+      prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]
+    );
+  };
+
   const handleSave = async () => {
-    const flavorAffinities = {
+    const flavorAffinities: Record<string, number> = {
       spicy: selectedTastes.includes('Spicy') ? 1 : 0,
       umami: selectedTastes.includes('Umami') ? 1 : 0,
       sweet: selectedTastes.includes('Sweet') ? 1 : 0,
@@ -72,11 +104,16 @@ export const PreferencesScreen = ({ navigation }: any) => {
       bitter: selectedTastes.includes('Bitter') ? 1 : 0,
     };
 
+    // Add extended flavors as additional affinities
+    if (selectedTastes.includes('Savory')) flavorAffinities.savory = 1;
+    if (selectedTastes.includes('Smoky')) flavorAffinities.smoky = 1;
+    if (selectedTastes.includes('Tangy')) flavorAffinities.tangy = 1;
+
     try {
       await updateTasteProfile.mutateAsync({
         dietary_regimen: selectedDiet,
         allergies: selectedAllergies,
-        flavor_affinities: flavorAffinities,
+        flavor_affinities: flavorAffinities as any,
         favorite_cuisines: selectedCuisines,
       });
       Alert.alert('Success', 'Your palate profile has been saved!');
@@ -161,6 +198,30 @@ export const PreferencesScreen = ({ navigation }: any) => {
           </View>
         </View>
 
+        {/* Spice Tolerance */}
+        <View className="mb-14">
+          <View className="flex-row items-center gap-3 mb-6">
+            <MaterialIcons name="local-fire-department" size={24} color="#ff8c00" />
+            <Text className="text-lg font-bold font-headline uppercase tracking-widest text-on-surface">Spice Tolerance</Text>
+          </View>
+          <View className="flex-row flex-wrap justify-between gap-y-3">
+            {SPICE_LEVELS.map((level) => {
+              const isActive = selectedSpiceLevel === level.key;
+              return (
+                <TouchableOpacity
+                  key={level.key}
+                  className={`w-[48%] p-4 rounded-xl border ${isActive ? 'bg-primary/15 border-primary/40' : 'bg-surface-container-low border-outline-variant/15'}`}
+                  onPress={() => setSelectedSpiceLevel(level.key)}
+                >
+                  <Text className="text-2xl mb-2">{level.icon}</Text>
+                  <Text className={`font-headline font-bold text-sm mb-1 ${isActive ? 'text-primary' : 'text-white'}`}>{level.label}</Text>
+                  <Text className="text-[10px] text-on-surface-variant">{level.desc}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Allergies */}
         <View className="mb-14">
           <View className="flex-row items-center gap-3 mb-6">
@@ -226,6 +287,31 @@ export const PreferencesScreen = ({ navigation }: any) => {
                 })}
               </View>
             </View>
+          </View>
+        </View>
+
+        {/* Cooking Style */}
+        <View className="mb-14">
+          <View className="mb-8">
+            <View className="flex-row items-center gap-3 mb-2">
+              <MaterialIcons name="outdoor-grill" size={24} color="#ffb77d" />
+              <Text className="text-lg font-bold font-headline uppercase tracking-widest text-on-surface">Cooking Style</Text>
+            </View>
+            <Text className="text-sm text-on-surface-variant">What kind of meals do you prefer?</Text>
+          </View>
+          <View className="flex-row flex-wrap gap-3">
+            {COOKING_STYLE_OPTIONS.map((style) => {
+              const isActive = selectedCookingStyles.includes(style);
+              return (
+                <TouchableOpacity
+                  key={style}
+                  className={`px-5 py-3 rounded-full border ${isActive ? 'bg-secondary/20 border-secondary/30' : 'bg-surface-container-low border-outline-variant/15'}`}
+                  onPress={() => toggleCookingStyle(style)}
+                >
+                  <Text className={`text-xs font-bold uppercase tracking-widest ${isActive ? 'text-secondary' : 'text-on-surface/60'}`}>{style}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 

@@ -1,27 +1,33 @@
 {
   "expo": {
-    "name": "TasteTwinApp",
-    "slug": "TasteTwinApp",
+    "name": "TasteTwin",
+    "slug": "tastetwin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#131313"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tastetwin.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "TasteTwin uses the camera to scan and analyze your meals.",
+        "NSPhotoLibraryUsageDescription": "TasteTwin needs photo access to analyze food images."
+      }
     },
     "android": {
+      "package": "com.tastetwin.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#131313"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": false,
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,3 +42,4 @@
     ]
   }
 }
+

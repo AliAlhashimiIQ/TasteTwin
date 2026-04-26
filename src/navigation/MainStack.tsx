@@ -2,18 +2,23 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabNavigator } from './MainTabNavigator';
 import { PredictionResultScreen } from '../screens/PredictionResultScreen';
+import { MealDetailScreen } from '../screens/MealDetailScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { PreferencesScreen } from '../screens/PreferencesScreen';
 import { RecommendationsScreen } from '../screens/RecommendationsScreen';
 import { ScanningProcessingScreen } from '../screens/ScanningProcessingScreen';
+import { RecipeDetailScreen } from '../screens/RecipeDetailScreen';
 import type { MealLog } from '../types/database';
+import type { Recommendation } from '../hooks/useRecommendations';
 
 export type MainStackParamList = {
   MainTabs: undefined;
   PredictionResult: { mealData?: MealLog } | undefined;
+  MealDetail: { meal: MealLog };
   Favorites: undefined;
   Preferences: undefined;
   Recommendations: undefined;
+  RecipeDetail: { recipe: Recommendation };
   ScanningProcessing: { imageUri: string } | undefined;
 };
 
@@ -34,6 +39,10 @@ export const MainStack = () => {
         options={{ presentation: 'modal' }} 
       />
       <Stack.Screen 
+        name="MealDetail" 
+        component={MealDetailScreen} 
+      />
+      <Stack.Screen 
         name="Favorites" 
         component={FavoritesScreen} 
         options={{ presentation: 'modal' }} 
@@ -47,6 +56,11 @@ export const MainStack = () => {
         name="Recommendations" 
         component={RecommendationsScreen} 
       />
+      <Stack.Screen 
+        name="RecipeDetail" 
+        component={RecipeDetailScreen} 
+      />
     </Stack.Navigator>
   );
 };
+

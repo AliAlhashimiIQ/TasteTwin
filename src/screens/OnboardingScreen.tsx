@@ -1,11 +1,132 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 
-export const OnboardingScreen = () => {
-  const navigation = useNavigation();
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+interface OnboardingSlide {
+  id: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
+  iconBg: string;
+  title: string;
+  highlight: string;
+  description: string;
+  features: { icon: keyof typeof MaterialIcons.glyphMap; text: string }[];
+}
+
+const SLIDES: OnboardingSlide[] = [
+  {
+    id: '1',
+    icon: 'camera-alt',
+    iconBg: '#ff8c00',
+    title: 'Scan &',
+    highlight: 'Identify',
+    description: 'Point your camera at any meal and our AI instantly identifies the dish, ingredients, and provides a full nutritional breakdown.',
+    features: [
+      { icon: 'restaurant', text: 'Identify any dish instantly' },
+      { icon: 'science', text: 'AI-powered ingredient detection' },
+      { icon: 'photo-camera', text: 'Camera or gallery upload' },
+    ],
+  },
+  {
+    id: '2',
+    icon: 'local-fire-department',
+    iconBg: '#e9c349',
+    title: 'Track Your',
+    highlight: 'Macros',
+    description: 'Get a complete nutritional breakdown — calories, protein, carbs, fat, fiber, sodium, and sugar — for every meal you scan.',
+    features: [
+      { icon: 'monitor-weight', text: 'Calories & macro tracking' },
+      { icon: 'insights', text: 'Fiber, sodium & sugar breakdown' },
+      { icon: 'history', text: 'Full meal history & trends' },
+    ],
+  },
+  {
+    id: '3',
+    icon: 'people',
+    iconBg: '#ffb77d',
+    title: 'Find Your',
+    highlight: 'Taste Twin',
+    description: 'Our AI analyzes your unique flavor DNA to match you with global epicureans who share your palate. Discover the recipes they love.',
+    features: [
+      { icon: 'psychology', text: 'AI flavor profile analysis' },
+      { icon: 'favorite', text: 'Personalized meal recommendations' },
+      { icon: 'groups', text: 'Connect with flavor soulmates' },
+    ],
+  },
+];
+
+export const OnboardingScreen = ({ navigation }: any) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
+
+  const handleNext = () => {
+    if (currentIndex < SLIDES.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      navigation.navigate('Preferences');
+    }
+  };
+
+  const handleSkip = () => {
+    navigation.navigate('Login');
+  };
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index ?? 0);
+    }
+  }).current;
+
+  const renderSlide = ({ item, index }: { item: OnboardingSlide; index: number }) => (
+    <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 32 }} className="flex-1 justify-center">
+      {/* Icon Hero */}
+      <Animated.View entering={FadeInDown.delay(100).springify()}>
+        <View className="items-center mb-8">
+          <View 
+            className="w-28 h-28 rounded-[32px] items-center justify-center mb-6"
+            style={{ backgroundColor: item.iconBg + '20', borderWidth: 1, borderColor: item.iconBg + '30' }}
+          >
+            <MaterialIcons name={item.icon} size={56} color={item.iconBg} />
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Title */}
+      <Animated.View entering={FadeInDown.delay(200).springify()}>
+        <View className="items-center mb-6">
+          <Text className="text-4xl font-headline font-extrabold text-on-surface tracking-tighter text-center">
+            {item.title}{' '}
+            <Text className="text-primary">{item.highlight}</Text>
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Description */}
+      <Animated.View entering={FadeInDown.delay(300).springify()}>
+        <Text className="text-base text-on-surface-variant leading-relaxed font-body text-center px-4 mb-10">
+          {item.description}
+        </Text>
+      </Animated.View>
+
+      {/* Feature List */}
+      <Animated.View entering={FadeInDown.delay(400).springify()}>
+        <View className="bg-surface-container-low/50 rounded-3xl p-6 border border-outline-variant/10">
+          {item.features.map((feature, i) => (
+            <View key={i} className={`flex-row items-center ${i < item.features.length - 1 ? 'mb-5' : ''}`}>
+              <View className="w-10 h-10 rounded-xl bg-primary/10 items-center justify-center mr-4">
+                <MaterialIcons name={feature.icon} size={20} color="#ff8c00" />
+              </View>
+              <Text className="text-on-surface font-body text-sm flex-1">{feature.text}</Text>
+            </View>
+          ))}
+        </View>
+      </Animated.View>
+    </View>
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background relative overflow-hidden">
@@ -13,85 +134,59 @@ export const OnboardingScreen = () => {
       <View className="absolute top-0 left-0 w-full h-full" style={styles.radialGlow} />
       <View className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full" style={styles.blur} />
 
-      {/* Progress Indicator */}
-      <View className="flex-row justify-center space-x-2 mt-8 mb-4 relative z-10">
-        <View className="h-1 w-12 rounded-full bg-primary-container" />
-        <View className="h-1 w-8 rounded-full bg-surface-container-high" />
-        <View className="h-1 w-8 rounded-full bg-surface-container-high" />
+      {/* Top Bar with Skip */}
+      <View className="flex-row justify-between items-center px-8 pt-4 relative z-10">
+        {/* Progress Dots */}
+        <View className="flex-row space-x-2">
+          {SLIDES.map((_, i) => (
+            <View
+              key={i}
+              className={`h-1 rounded-full ${i === currentIndex ? 'w-12 bg-primary-container' : 'w-8 bg-surface-container-high'}`}
+              style={i > 0 ? { marginLeft: 8 } : {}}
+            />
+          ))}
+        </View>
+        <TouchableOpacity onPress={handleSkip}>
+          <Text className="text-on-surface-variant/60 text-sm font-label uppercase tracking-widest">Skip</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Hero Content Section */}
-      <View className="flex-1 px-8 pt-6 relative z-10 items-center">
-        {/* Asymmetric Bento-style Visual Container (Approximation for Mobile) */}
-        <View className="w-full max-w-lg mb-12 h-[45%] flex-row flex-wrap justify-between">
-          
-          {/* Main Twin Visual */}
-          <View className="w-[65%] h-[60%] rounded-3xl overflow-hidden shadow-2xl relative mb-4">
-            <Image 
-              source="https://lh3.googleusercontent.com/aida-public/AB6AXuARHXoQT_EDC7Q8qVFfAWGCnxNBKJQjlOh7RDEKDggAhVu24D7DELInglj1DzER_hBq_mTo104duGGD1lhpojPN4AXhAgncV543RC-EJFYxgLOSeAL0260sv1w2yTWz7HTf06NANuGn_nhkP6kQWg4bbfi54l97vqn1s8P_8e0heFDDA6plGv0-F2JDyTnjWYNPokRw99d7ETfFVugQHCncq3xTpc9nTqVctyj-QmMnytg4my1ytK6txFqDhTwyZsnOlrU_GguIOYwB"
-              contentFit="cover"
-              transition={300}
-              style={{ width: '100%', height: '100%' }}
-            />
-            <View className="absolute inset-0 bg-background/30" />
-            <View className="absolute bottom-4 left-4 flex-row items-center space-x-2">
-              <View className="w-2 h-2 rounded-full bg-primary" />
-              <Text className="text-[10px] font-label uppercase tracking-widest text-primary-fixed">AI Matching Live</Text>
-            </View>
-          </View>
-
-          {/* Secondary Taste Profile Visual */}
-          <View className="w-[30%] h-[40%] rounded-3xl overflow-hidden bg-surface-container-low/70 border border-outline-variant/10">
-            <Image 
-              source="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ74exu1_huCrgy1H1Yd2Im2TPM4mvMwXxmsnu4_HkLAv1da1k0CBqhVZFVcu1O9QLInL_BnDzocoPgWTpFXj3EKAr-4TGEjWakp7Dlt1wstTFECEFNlzCEd9zSgde7y_BJMUmSCJBIC5cpAIL0rkutzipU5HpmaeIf1U2k5T-tiZZqfOCcDqRtu37mKyeQmTmZ5vA8C1lse9RJnHb6ZaRWM8Zjcc_ay2sNbQBp-hIzfFqNHsfkZGUULHs8lt4qaQpN-XnQ4OgMwDY"
-              contentFit="cover"
-              transition={200}
-              style={{ width: '100%', height: '100%' }}
-            />
-          </View>
-
-          {/* Twin Connectivity Nodes */}
-          <View className="w-full h-[30%] flex-row items-center justify-between px-6 bg-surface-container-low/50 rounded-3xl border border-outline-variant/10">
-            <View className="flex-row">
-              <View className="w-12 h-12 rounded-full border-2 border-background bg-surface-container overflow-hidden z-10">
-                <Image source="https://lh3.googleusercontent.com/aida-public/AB6AXuCDhpg2ioRjWv748Amz2LLykmK9zASk51cU5_IuoSQI5siP80sER2vbie80gvd7AT1pbdyxbPPFiR0hAxpeQBpgoLs3PMMMdAZlz0jCnSRq6LcOHYztXnA-Hz7iI4JAQFhEWRFs5wKeIJYZOv-nl9MOmLdTlkEWOixdHMdCzF_1t_Npc1nVrwnrq5UWx1PdO5A007kkuPSZSyWsu7F4Z6tec37D68yAMkhWHOOLG53ihbCioigMyOq76d6v_tC0209Aa2DGIcRs2eN8" contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              </View>
-              <View className="w-12 h-12 rounded-full border-2 border-background bg-surface-container overflow-hidden -ml-4">
-                <Image source="https://lh3.googleusercontent.com/aida-public/AB6AXuCzF3pdRlpgExff8ID33DqfJVXyMcK0EJzQQ0psgRon5D9tY3dwbZ4KT9Xr-gCeAPv7-pkAk4tDA1E8rJuyZEmlGbiBBejB2N1CILdpf70H_JwTCaVcdb3h2bzEWUQdhx1Fo4sukCQ5G3RIJB0CTyVn_JW4nCy5lhdE80smu9vHX4vCk4D-boP2TOreMICkUq-zLn_b7YU5ggarKRmEsW-HVAGE3AorWfUWLkhgD6EsYUU8nNfKNB-6xHsH2CN4pF7pYuuBWDLvJniv" contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              </View>
-            </View>
-            <View className="flex-1 h-[1px] mx-4 bg-[#ffb77d]/50" />
-            <View className="items-end">
-              <Text className="text-[10px] text-on-surface-variant uppercase tracking-widest font-label">98% Match</Text>
-              <Text className="text-primary font-headline font-bold text-sm">Taste Twins</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Typography Header */}
-        <View className="items-center max-w-md w-full">
-          <Text className="text-4xl md:text-5xl font-headline font-extrabold text-on-surface tracking-tighter text-center mb-4">
-            Find Your <Text className="text-primary">Taste Twin</Text>
-          </Text>
-          <Text className="text-base text-on-surface-variant leading-relaxed font-body text-center px-4">
-            Our AI analyzes your unique flavor DNA to match you with global epicureans who share your palate. Discover the recipes they love.
-          </Text>
-        </View>
-      </View>
+      {/* Slides */}
+      <FlatList
+        ref={flatListRef}
+        data={SLIDES}
+        renderItem={renderSlide}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+        className="flex-1"
+        scrollEventThrottle={16}
+      />
 
       {/* Fixed Action Bottom Section */}
       <View className="p-8 relative z-10">
         <View className="w-full space-y-6">
           {/* Primary CTA */}
           <TouchableOpacity 
-            className="w-full py-5 rounded-2xl bg-primary items-center justify-center overflow-hidden"
-            onPress={() => navigation.navigate('Preferences' as never)}
+            className="w-full py-5 rounded-2xl bg-primary items-center justify-center overflow-hidden flex-row"
+            onPress={handleNext}
           >
-            <Text className="text-on-primary font-headline font-bold text-lg tracking-tight">Get Started</Text>
+            <Text className="text-on-primary font-headline font-bold text-lg tracking-tight">
+              {currentIndex < SLIDES.length - 1 ? 'Next' : 'Get Started'}
+            </Text>
+            <MaterialIcons 
+              name={currentIndex < SLIDES.length - 1 ? 'arrow-forward' : 'restaurant'} 
+              size={20} 
+              color="#4d2600" 
+              style={{ marginLeft: 8 }}
+            />
           </TouchableOpacity>
 
           {/* Secondary Action */}
-          <TouchableOpacity onPress={() => navigation.navigate('Login' as never)} className="mt-4 items-center">
+          <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-4 items-center">
             <Text className="text-on-surface-variant/60 text-sm font-label uppercase tracking-widest">
               Already have an account? Log In
             </Text>
@@ -108,7 +203,6 @@ const styles = StyleSheet.create({
   },
   radialGlow: {
     backgroundColor: 'transparent',
-    // Approximation of radial glow in RN
     shadowColor: "#ff8c00",
     shadowOffset: {
       width: 0,

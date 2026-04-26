@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeScreen } from '../screens/HomeScreen';
 import { UploadScreen } from '../screens/UploadScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -19,6 +20,9 @@ export type MainTabParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator = () => {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 12);
+
   return (
     <Tab.Navigator 
       screenOptions={({ route }) => ({
@@ -27,27 +31,27 @@ export const MainTabNavigator = () => {
           backgroundColor: 'rgba(28, 27, 27, 0.95)',
           borderTopWidth: 0,
           elevation: 0,
-          height: Platform.OS === 'ios' ? 88 : 70,
-          position: 'absolute',
+          height: 60 + bottomInset,
+          position: 'absolute' as const,
           bottom: 0,
           left: 0,
           right: 0,
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
           paddingTop: 12,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingBottom: bottomInset,
           shadowColor: '#ff8c00',
           shadowOffset: { width: 0, height: -10 },
           shadowOpacity: 0.08,
           shadowRadius: 40,
         },
         tabBarActiveTintColor: '#ff8c00',
-        tabBarInactiveTintColor: '#6b7280', // gray-500 equivalent
+        tabBarInactiveTintColor: '#6b7280',
         tabBarLabelStyle: {
           fontFamily: 'Inter',
           fontSize: 10,
-          fontWeight: '500',
-          textTransform: 'uppercase',
+          fontWeight: '500' as const,
+          textTransform: 'uppercase' as const,
           letterSpacing: 1,
           marginTop: 4,
         },
@@ -57,7 +61,7 @@ export const MainTabNavigator = () => {
           if (route.name === 'Home') iconName = 'home';
           else if (route.name === 'Upload') iconName = 'add-a-photo';
           else if (route.name === 'History') iconName = 'history';
-          else if (route.name === 'Twin') iconName = 'people'; // using people instead of custom
+          else if (route.name === 'Twin') iconName = 'people';
           else if (route.name === 'Profile') iconName = 'person';
 
           return <MaterialIcons name={iconName} size={24} color={color} />;
@@ -72,3 +76,4 @@ export const MainTabNavigator = () => {
     </Tab.Navigator>
   );
 };
+

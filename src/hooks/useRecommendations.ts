@@ -17,6 +17,11 @@ export interface Recommendation {
   match_percentage: number;
   image_url: string;
   cuisine_type: string;
+  reason: string;
+  ingredients: string[];
+  instructions: string[];
+  prep_time: string;
+  servings: number;
 }
 
 // Curated food images to pair with recommendations (high-quality placeholders)
@@ -47,8 +52,21 @@ export const useRecommendations = () => {
         throw new Error('Could not load your taste profile');
       }
 
+      // Fetch recent meal history for context
+      const { data: recentMeals } = await supabase
+        .from('meal_logs')
+        .select('name, flavor_tags, ingredients, calories')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
       const tp = tasteProfile as TasteProfile;
       const affinities = tp.flavor_affinities as FlavorAffinities;
+
+      // Build meal history summary
+      const mealHistorySummary = recentMeals && recentMeals.length > 0
+        ? `Recent meals enjoyed: ${recentMeals.map(m => `${m.name} (${(m.flavor_tags || []).join(', ')})`).join('; ')}`
+        : 'No meal history yet — suggest popular and diverse dishes.';
 
       // Build a profile summary for the AI
       const profileSummary = `
@@ -56,12 +74,13 @@ Dietary regimen: ${tp.dietary_regimen || 'None'}
 Allergies: ${tp.allergies?.length > 0 ? tp.allergies.join(', ') : 'None'}
 Flavor preferences: Spicy (${affinities.spicy}/10), Umami (${affinities.umami}/10), Sweet (${affinities.sweet}/10), Sour (${affinities.sour}/10), Bitter (${affinities.bitter}/10)
 Favorite cuisines: ${tp.favorite_cuisines?.length > 0 ? tp.favorite_cuisines.join(', ') : 'Open to all'}
+${mealHistorySummary}
       `.trim();
 
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
       const prompt = `
-You are a world-class culinary sommelier. Based on this user's taste profile, recommend exactly 5 meals they would love. The recommendations should be diverse, creative, and personalized.
+You are a world-class culinary sommelier. Based on this user's taste profile AND their meal history, recommend exactly 5 meals they would love. The recommendations should be diverse, creative, personalized, and different from what they've already eaten.
 
 User Profile:
 ${profileSummary}
@@ -75,7 +94,12 @@ Return ONLY a raw JSON array (no markdown, no code blocks) with exactly 5 object
   "carbs": number (grams),
   "fat": number (grams),
   "match_percentage": number (80-99, how well it fits their profile),
-  "cuisine_type": "string (e.g. Modern Japanese, Rustic Italian)"
+  "cuisine_type": "string (e.g. Modern Japanese, Rustic Italian)",
+  "reason": "string (1 short sentence explaining WHY this was recommended)",
+  "ingredients": ["string", "string", ...] (list of 6-12 ingredients with quantities, e.g. '2 cups basmati rice'),
+  "instructions": ["string", "string", ...] (4-8 clear step-by-step cooking instructions),
+  "prep_time": "string (e.g. '25 mins', '1 hr 15 mins')",
+  "servings": number (1-4)
 }
 
 Sort by match_percentage descending. Make the descriptions evocative and appetizing.
@@ -104,6 +128,11 @@ Sort by match_percentage descending. Make the descriptions evocative and appetiz
         match_percentage: item.match_percentage || 85,
         image_url: FOOD_IMAGES[index % FOOD_IMAGES.length],
         cuisine_type: item.cuisine_type || 'Fusion',
+        reason: item.reason || 'Curated for your unique flavor profile.',
+        ingredients: item.ingredients || [],
+        instructions: item.instructions || [],
+        prep_time: item.prep_time || '30 mins',
+        servings: item.servings || 2,
       }));
     },
     enabled: !!user,
@@ -111,3 +140,4 @@ Sort by match_percentage descending. Make the descriptions evocative and appetiz
     retry: 1,
   });
 };
+
