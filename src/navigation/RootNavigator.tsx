@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { supabase } from '../lib/supabase';
@@ -47,9 +46,7 @@ export const RootNavigator = () => {
 
   return (
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        {session ? <MainStack /> : <AuthStack />}
-      </NavigationContainer>
+      {session ? <MainStack /> : <AuthStack />}
     </AuthContext.Provider>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import Toast from 'react-native-toast-message';
 
 export const LoginScreen = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -26,7 +27,11 @@ export const LoginScreen = () => {
     });
 
     if (error) {
-      setError(error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Sign In Failed',
+        text2: error.message,
+      });
     }
     // On success, onAuthStateChange in RootNavigator handles navigation
     setLoading(false);
@@ -44,7 +49,7 @@ export const LoginScreen = () => {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -55,7 +60,20 @@ export const LoginScreen = () => {
     });
 
     if (error) {
-      setError(error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Sign Up Failed',
+        text2: error.message,
+      });
+    } else if (data.session === null) {
+      // This happens when email confirmation is enabled in Supabase
+      Toast.show({
+        type: 'success',
+        text1: 'Verification Sent',
+        text2: 'Please check your email to confirm your account.',
+        visibilityTime: 5000,
+      });
+      setIsSignUp(false); // Switch to sign in view
     }
     // The trigger in Supabase will auto-create profile + taste_profile
     setLoading(false);

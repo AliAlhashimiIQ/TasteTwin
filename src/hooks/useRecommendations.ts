@@ -58,7 +58,7 @@ Flavor preferences: Spicy (${affinities.spicy}/10), Umami (${affinities.umami}/1
 Favorite cuisines: ${tp.favorite_cuisines?.length > 0 ? tp.favorite_cuisines.join(', ') : 'Open to all'}
       `.trim();
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
       const prompt = `
 You are a world-class culinary sommelier. Based on this user's taste profile, recommend exactly 5 meals they would love. The recommendations should be diverse, creative, and personalized.

@@ -27,7 +27,7 @@ export const useAnalyze = () => {
       const mimeType = imageUri.toLowerCase().endsWith('png') ? 'image/png' : 'image/jpeg';
 
       // 3. Call Gemini
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `
 You are an expert food analyzer and sommelier. Analyze this food image and return a JSON object with the exact following schema. Do NOT use markdown code blocks, return ONLY raw JSON.

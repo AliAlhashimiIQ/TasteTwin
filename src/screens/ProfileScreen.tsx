@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -53,7 +54,7 @@ export const ProfileScreen = () => {
         <View className="flex-row items-center space-x-3">
           <View className="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} className="w-full h-full object-cover" />
+              <Image source={avatarUrl} placeholder="L6PZfSi_.AyE_3t7t7R**0o#DgR4" contentFit="cover" transition={200} style={{ width: '100%', height: '100%' }} />
             ) : (
               <View className="w-full h-full bg-primary/20 items-center justify-center">
                 <MaterialIcons name="person" size={20} color="#ffb77d" />
@@ -72,7 +73,7 @@ export const ProfileScreen = () => {
           <View className="relative mb-6">
             <View className="w-32 h-32 rounded-full p-1 bg-primary border-4 border-background overflow-visible">
               {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} className="w-full h-full rounded-full object-cover" />
+                <Image source={avatarUrl} placeholder="L6PZfSi_.AyE_3t7t7R**0o#DgR4" contentFit="cover" transition={200} style={{ width: '100%', height: '100%', borderRadius: 999 }} />
               ) : (
                 <View className="w-full h-full rounded-full bg-surface-container items-center justify-center">
                   <MaterialIcons name="person" size={48} color="#ffb77d" />

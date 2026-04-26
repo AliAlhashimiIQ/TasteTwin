@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, SafeAreaView, Image, Animated, Easing, Alert } from 'react-native';
+import { View, Text, SafeAreaView, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,6 +8,16 @@ import type { RouteProp } from '@react-navigation/native';
 import type { MainStackParamList } from '../navigation/MainStack';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { useAuth } from '../lib/AuthContext';
+import Toast from 'react-native-toast-message';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+
+const BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
 
 type ScanningScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'ScanningProcessing'>;
 type ScanningScreenRouteProp = RouteProp<MainStackParamList, 'ScanningProcessing'>;
@@ -15,56 +26,53 @@ export const ScanningProcessingScreen = () => {
   const navigation = useNavigation<ScanningScreenNavigationProp>();
   const route = useRoute<ScanningScreenRouteProp>();
   const imageUri = route.params?.imageUri;
-  const scanLineAnim = new Animated.Value(0);
-  
+
   const { user } = useAuth();
   const analyzeMutation = useAnalyze();
 
-  useEffect(() => {
-    // Start scanning animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        })
-      ])
-    ).start();
+  // Reanimated scanning line
+  const scanY = useSharedValue(0);
 
-    // Trigger AI analysis
+  useEffect(() => {
+    scanY.value = withRepeat(
+      withTiming(300, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+  }, []);
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: scanY.value }],
+  }));
+
+  useEffect(() => {
     const analyzeImage = async () => {
       if (!imageUri || !user) {
-        Alert.alert('Error', 'Missing image or user session.');
+        Toast.show({
+          type: 'error',
+          text1: 'Missing Data',
+          text2: 'No image or user session found.',
+        });
         navigation.goBack();
         return;
       }
-      
+
       try {
         const result = await analyzeMutation.mutateAsync({ imageUri, userId: user.id });
         navigation.replace('PredictionResult', { mealData: result as any });
       } catch (error: any) {
-        Alert.alert('Analysis Failed', error.message || 'Could not analyze image.');
+        Toast.show({
+          type: 'error',
+          text1: 'Analysis Failed',
+          text2: error.message || 'Could not analyze image. Try again.',
+        });
         navigation.goBack();
       }
     };
-    
+
     analyzeImage();
   }, []);
 
-  const scanTranslateY = scanLineAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 300]
-  });
-
-  // Use the captured image or fall back to placeholder
   const displayImage = imageUri
     ? { uri: imageUri }
     : { uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbar-FlVw5dj_D2Hlh-uQaHiZZcKxbLJAcxDw9l2Mrcw3Wvlrph8RX7egHSi2-lm7xaetSe43g-sspRToTDB4-jKgSU3hFtbLL4PLWYvqnDCf2Zg8Mov6Q911sA9xdMeaWQ7UpHZiWnkIDUUrsmDuXsEq9SBLm6lwyoVB4oS8N1_vs18AULXqFsXLNSeM0JOQrCYmdUsqdbXcse4BWSdOOCEub5FsDXbGYdty-qI6SQaRA0mgOgzeFmCGcExlIR5vgwxiSREotv3vw' };
@@ -74,10 +82,13 @@ export const ScanningProcessingScreen = () => {
       {/* TopAppBar */}
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/80 z-50">
         <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full bg-surface-container overflow-hidden ring-2 ring-primary/20">
-            <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDEtRKq0nDx9tDpDKSFkYBZ-K3gSlJCEhswujWIdXfBRO6uh9NP8jCjtiUGstBoT6EgjSrwzYLW8w-VyicBUhMugWjx-ckfEkgAgsZk0t4HKsA35ZnNESQxQa3q62KF4jDkanGpnGWxIBQIbt3bXWUCe4EtmEctZnLAeMHLoZ_6HQqklUMXW-Ha48Kradgbr9to6OeutCtY1ULIRoZRhjLo2rsY_9E87dfb0M4Gd17GrvKlWpbRoIlkuCBe6O1Yxood7od6Bd9MZ7yc' }}
-              className="w-full h-full object-cover"
+          <View className="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+            <Image
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuDEtRKq0nDx9tDpDKSFkYBZ-K3gSlJCEhswujWIdXfBRO6uh9NP8jCjtiUGstBoT6EgjSrwzYLW8w-VyicBUhMugWjx-ckfEkgAgsZk0t4HKsA35ZnNESQxQa3q62KF4jDkanGpnGWxIBQIbt3bXWUCe4EtmEctZnLAeMHLoZ_6HQqklUMXW-Ha48Kradgbr9to6OeutCtY1ULIRoZRhjLo2rsY_9E87dfb0M4Gd17GrvKlWpbRoIlkuCBe6O1Yxood7od6Bd9MZ7yc"
+              placeholder={BLURHASH}
+              contentFit="cover"
+              transition={200}
+              style={{ width: '100%', height: '100%' }}
             />
           </View>
           <Text className="font-headline font-black text-xl text-white tracking-tighter">TasteTwin</Text>
@@ -87,17 +98,31 @@ export const ScanningProcessingScreen = () => {
       <View className="flex-1 items-center justify-center px-6 pb-20">
         {/* Scanning Interface */}
         <View className="relative w-full max-w-md aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl bg-surface-container border border-outline-variant/10">
-          <Image 
+          <Image
             source={displayImage}
-            className="w-full h-full object-cover"
-            style={imageUri ? undefined : { opacity: 0.7 }}
+            placeholder={BLURHASH}
+            contentFit="cover"
+            transition={300}
+            style={{ width: '100%', height: '100%', opacity: imageUri ? 1 : 0.7 }}
           />
           <View className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-          
-          {/* Animated Scanning Line */}
-          <Animated.View 
-            className="absolute top-0 w-full h-[2px] bg-primary shadow-lg shadow-primary"
-            style={{ transform: [{ translateY: scanTranslateY }] }}
+
+          {/* Animated Scanning Line — Reanimated */}
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                width: '100%',
+                height: 2,
+                backgroundColor: '#ffb77d',
+                shadowColor: '#ffb77d',
+                shadowOpacity: 0.8,
+                shadowRadius: 8,
+                elevation: 4,
+              },
+              scanLineStyle,
+            ]}
           />
 
           {/* Floating Glass Elements */}
@@ -105,7 +130,7 @@ export const ScanningProcessingScreen = () => {
             <MaterialIcons name="restaurant" size={14} color="#e9c349" />
             <Text className="font-label text-[10px] uppercase tracking-widest text-secondary">Analyzing Texture</Text>
           </View>
-          
+
           <View className="absolute bottom-24 right-6 bg-[#1c1b1b]/70 rounded-xl p-3 border border-outline-variant/20 shadow-lg flex-row items-center gap-2">
             <MaterialIcons name="psychology" size={14} color="#ffb77d" />
             <Text className="font-label text-[10px] uppercase tracking-widest text-primary">Flavor Mapping</Text>

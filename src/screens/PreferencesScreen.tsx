@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../lib/AuthContext';
 import { useProfile, useUpdateTasteProfile } from '../hooks/useProfile';
 
@@ -16,9 +16,10 @@ const ALLERGY_OPTIONS = ['Dairy', 'Peanuts', 'Gluten', 'Shellfish', 'Soy', 'Tree
 const TASTE_OPTIONS = ['Spicy', 'Umami', 'Sweet', 'Sour', 'Bitter'];
 const CUISINE_OPTIONS = ['Mediterranean', 'Japanese', 'Mexican', 'Thai', 'Nordic', 'Indian'];
 
-export const PreferencesScreen = () => {
-  const navigation = useNavigation();
+export const PreferencesScreen = ({ navigation }: any) => {
   const { isAuthenticated } = useAuth();
+  
+  // Only fetch profile data when the user is authenticated
   const { data: profileData, isLoading: profileLoading } = useProfile();
   const updateTasteProfile = useUpdateTasteProfile();
 
@@ -27,7 +28,7 @@ export const PreferencesScreen = () => {
   const [selectedTastes, setSelectedTastes] = useState<string[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
 
-  // Pre-populate from saved data
+  // Pre-populate from saved data (only runs when authenticated and data loads)
   useEffect(() => {
     if (profileData?.tasteProfile) {
       const tp = profileData.tasteProfile;
@@ -79,11 +80,20 @@ export const PreferencesScreen = () => {
         favorite_cuisines: selectedCuisines,
       });
       Alert.alert('Success', 'Your palate profile has been saved!');
-      if (isAuthenticated && navigation.canGoBack()) {
+      if (navigation.canGoBack()) {
         navigation.goBack();
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to save preferences.');
+    }
+  };
+
+  // When the user taps "Save" but isn't authenticated, navigate to Login
+  const handleContinue = () => {
+    if (isAuthenticated) {
+      handleSave();
+    } else {
+      navigation.navigate('Login' as never);
     }
   };
 
@@ -99,17 +109,21 @@ export const PreferencesScreen = () => {
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-row justify-between items-center px-6 py-4 bg-[#131313]/80 z-50">
         <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full overflow-hidden">
-            <Image
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDeRLdJGD5fKE-4iQa-FWVv1EL0nJPyW6W4WNETy1K7x2PgnAAzh6vXGemIzXG03tv38iJ-1CX47z1mKqXzLGcXrrr8XTRaiP_0mO4kH9kNDP5hpZT1rjC3MOXa6nx95GxTHP1HEDBpL3W_zNsb2jorzUn83zuy4dR5q6cwRWZbtsSfRkVfyBehVEeHGn5ap8EtoU6Uee4efM4lc26_CihVjkokGIF7PancRe58v7Rvy8eTwYpm42p0tDQdTVIhKuzlcE8DQtlXC_t8' }}
-              className="w-full h-full object-cover"
-            />
-          </View>
+          {navigation.canGoBack() && (
+            <TouchableOpacity 
+              className="w-10 h-10 rounded-full items-center justify-center bg-surface-container-high"
+              onPress={() => navigation.goBack()}
+            >
+              <MaterialIcons name="arrow-back" size={20} color="#e5e2e1" />
+            </TouchableOpacity>
+          )}
           <Text className="text-xl font-black text-white tracking-tighter font-headline">TasteTwin</Text>
         </View>
-        <TouchableOpacity>
-          <MaterialIcons name="search" size={24} color="#e5e2e1" />
-        </TouchableOpacity>
+        {!isAuthenticated && (
+          <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+            <Text className="text-secondary text-sm font-medium">Skip</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
@@ -159,7 +173,7 @@ export const PreferencesScreen = () => {
               return (
                 <TouchableOpacity
                   key={allergy}
-                  className={`px-5 py-3 rounded-full flex-row items-center gap-2 ${isActive ? 'bg-error-container shadow-lg shadow-error/10' : 'bg-surface-container-low border border-outline-variant/15'}`}
+                  className={`px-5 py-3 rounded-full flex-row items-center gap-2 ${isActive ? 'bg-error-container shadow-lg' : 'bg-surface-container-low border border-outline-variant/15'}`}
                   onPress={() => toggleAllergy(allergy)}
                 >
                   <MaterialIcons name={isActive ? 'check' : 'close'} size={16} color={isActive ? '#ffffff' : '#e5e2e1'} />
@@ -219,15 +233,17 @@ export const PreferencesScreen = () => {
         <View className="mt-8">
           <TouchableOpacity
             className="w-full py-5 rounded-2xl bg-primary flex-row items-center justify-center gap-3 shadow-lg shadow-primary/20"
-            onPress={isAuthenticated ? handleSave : () => navigation.navigate('Login' as never)}
+            onPress={handleContinue}
             disabled={updateTasteProfile.isPending}
           >
             {updateTasteProfile.isPending ? (
               <ActivityIndicator color="#4d2600" />
             ) : (
               <>
-                <Text className="text-on-primary font-headline font-extrabold text-lg">Save Palate Profile</Text>
-                <MaterialIcons name="restaurant" size={20} color="#4d2600" />
+                <Text className="text-on-primary font-headline font-extrabold text-lg">
+                  {isAuthenticated ? 'Save Palate Profile' : 'Continue to Sign Up'}
+                </Text>
+                <MaterialIcons name={isAuthenticated ? 'restaurant' : 'arrow-forward'} size={20} color="#4d2600" />
               </>
             )}
           </TouchableOpacity>

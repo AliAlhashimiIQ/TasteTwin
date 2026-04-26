@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -55,8 +56,11 @@ export const UploadScreen = () => {
         <View className="flex-row items-center space-x-3">
           <View className="w-8 h-8 rounded-full overflow-hidden">
             <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfGlgffT_nQXdyMy2r_CERmExVomxko-N84X2Hsww4bUQUtDypeuf0pvIebee4lEPqrMGM1Xyh2JmpYFekk-DOgH20Lskt2RX68NrZnnkurJhVeKayoSnM4hM4sc89EkfwXun5g0fHzfr4-CpEjjRT9JqqNtmAqnrwi-pMNFuaSMFZEGstlI62wrXl3q1qSoZyEg3fVFxi6dvzVjbaL9JDFbg5OwwU-XSiplyHbSs1T-NgB7p782HLyfIQDYkjr4KMUW-kkNAeo3HP' }}
-              className="w-full h-full object-cover"
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuBfGlgffT_nQXdyMy2r_CERmExVomxko-N84X2Hsww4bUQUtDypeuf0pvIebee4lEPqrMGM1Xyh2JmpYFekk-DOgH20Lskt2RX68NrZnnkurJhVeKayoSnM4hM4sc89EkfwXun5g0fHzfr4-CpEjjRT9JqqNtmAqnrwi-pMNFuaSMFZEGstlI62wrXl3q1qSoZyEg3fVFxi6dvzVjbaL9JDFbg5OwwU-XSiplyHbSs1T-NgB7p782HLyfIQDYkjr4KMUW-kkNAeo3HP"
+              placeholder="L6PZfSi_.AyE_3t7t7R**0o#DgR4"
+              contentFit="cover"
+              transition={200}
+              style={{ width: '100%', height: '100%' }}
             />
           </View>
           <Text className="font-headline font-black text-xl text-white tracking-tighter ml-3">TasteTwin</Text>
@@ -96,8 +100,11 @@ export const UploadScreen = () => {
             {/* Background Texture */}
             <View className="absolute inset-0 opacity-10">
               <Image 
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAa1z4ZQR4RPycgEiAaGhGn--TWXNXZIfFoowb-VLKuN0lbL9besE4vbxEUKusoozxY7eF2QWKItbRPOi2SJrryToIJXHOHLWnAoDnLMqT2epgQV0F7bY4Krkqtr5VT4aLHiNNchr92wA_XU7HxaoT_jpv8PSW5lTeDYU2_-kutY5jLDsXRfrZ6l9wR6srJfe8KnoCuJpVGAIoRlMIQACcwJ90C7cWiiEHOMg7JNX8bf3w00L0mwhkYktQ9RZqO4Nse0IKdB7X6npz0' }}
-                className="w-full h-full object-cover"
+                source="https://lh3.googleusercontent.com/aida-public/AB6AXuAa1z4ZQR4RPycgEiAaGhGn--TWXNXZIfFoowb-VLKuN0lbL9besE4vbxEUKusoozxY7eF2QWKItbRPOi2SJrryToIJXHOHLWnAoDnLMqT2epgQV0F7bY4Krkqtr5VT4aLHiNNchr92wA_XU7HxaoT_jpv8PSW5lTeDYU2_-kutY5jLDsXRfrZ6l9wR6srJfe8KnoCuJpVGAIoRlMIQACcwJ90C7cWiiEHOMg7JNX8bf3w00L0mwhkYktQ9RZqO4Nse0IKdB7X6npz0"
+                placeholder="L6PZfSi_.AyE_3t7t7R**0o#DgR4"
+                contentFit="cover"
+                transition={200}
+                style={{ width: '100%', height: '100%' }}
               />
             </View>
 
